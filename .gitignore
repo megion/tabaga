@@ -1,0 +1,16 @@
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+#azure
+bin
+*.cspkg
+.idea
+
+.project
+.classpath
+.settings

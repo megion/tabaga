@@ -1,0 +1,25 @@
+@CHARSET "UTF-8";
+
+.enterTarget {
+	/*background-color: #fad165 !important;
+	border: 2px solid blue !important;*/
+	-moz-border-radius: 3px; /* mozilla 1.5 */
+	-webkit-border-radius: 3px; /* safari 3 */
+	-khtml-border-radius: 3px; /* Konqueror */
+	border-radius: 3px; /* CSS3 */
+	display: block;
+}
+
+.enterCenterTarget {
+	border: 1px solid green !important;
+}
+
+.enterOverTarget {
+	border-top: 1px solid green !important;
+	background-color: #daeec1
+}
+
+.enterUnderTarget {
+	border-bottom: 1px solid green !important;
+}
+
