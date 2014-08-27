@@ -41,7 +41,7 @@ tabaga.DropTarget.prototype.accept = function(dragObject) {
 };
 
 tabaga.DropTarget.prototype.onLeave = function() {
-	this.element.className = rememberClassName;
+	this.element.className = this.rememberClassName;
 };
 
 tabaga.DropTarget.prototype.onEnter = function() {
@@ -51,7 +51,7 @@ tabaga.DropTarget.prototype.onEnter = function() {
 				+ ' enterTarget enterCenterTarget';
 	}
 
-	this.position = tabaga.getOffset(element);
+	this.position = tabaga.getOffset(this.element);
 };
 
 tabaga.DropTarget.prototype.onMove = function(x, y) {

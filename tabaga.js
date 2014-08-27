@@ -28,7 +28,7 @@ tabaga.fixEvent = function(e) {
 	}
 
 	return e;
-}
+};
 
 tabaga.getOffsetRect = function(elem) {
     var box = elem.getBoundingClientRect();
@@ -44,7 +44,7 @@ tabaga.getOffsetRect = function(elem) {
     var left = box.left + scrollLeft - clientLeft;
  
     return { top: Math.round(top), left: Math.round(left) };
-}
+};
 
 tabaga.getOffsetSum = function(elem) {
     var top=0, left=0;
@@ -55,7 +55,7 @@ tabaga.getOffsetSum = function(elem) {
     }
  
     return {top: top, left: left};
-}
+};
 
 tabaga.getOffset = function(elem) {
     if (elem.getBoundingClientRect) {
@@ -63,8 +63,31 @@ tabaga.getOffset = function(elem) {
     } else {
         return tabaga.getOffsetSum(elem);
     }
-}
+};
 
 tabaga.emptyFalseFn = function() {
 	return false;
-}
+};
+
+//
+(function($) {
+	/**
+	 * var config = {
+		urls: {
+			feedChildNodesUrl: "pages/page",
+			feedTreeScopeNodesUrl: "pages/pageTreeScope"
+		},
+	    enableDragAndDrop: true
+	    //dragAndDropScrollContainer: null
+	}
+	 */
+	$.fn.createTreeControl = function(config, rootNodes) {	
+		var tree = $(this);
+		
+		var treeControl = new tabaga.TreeControl("1", tree[0]);
+		treeControl.configure(config);
+		treeControl.init(rootNodes);
+		
+		return treeControl;
+	}
+})(jQuery);

@@ -80,40 +80,74 @@ tabaga.LINE_TREE_CLASSES = {
  *            ID дерева
  * @param feedChildNodesUrl -
  *            относительный URL сервера для обновления ветки дерева
- * @param treeObject -
- *            объект хранящий иерархию узлов дерева. Данный объект получается с
- *            сервера и загружается вместе c страницей в текстовом представлении
- *            JSON
  */
-tabaga.TreeControl = function(treeUl, feedChildNodesUrl,
-		feedTreeScopeNodesUrl, enableDragAndDrop, treeObject) {
+tabaga.TreeControl = function(id, treeUl) {
+	this.id = id;
 	this.treeUl = treeUl;
-	// this.treeviewObj = null;
-	this.treeObject = treeObject;
-	this.feedChildNodesUrl = feedChildNodesUrl;
-	this.feedTreeScopeNodesUrl = feedTreeScopeNodesUrl;
-	this.enableDragAndDrop = enableDragAndDrop;
 	this.currentSelectedTreeNodeSpan = null;
-	this.allNodesMap = new Object();
-	this.treeHash = null;
+	this.allNodesMap = {};
 };
+
+/**
+ * Установка конфигурации дерева
+ */
+tabaga.TreeControl.prototype.configure = function(config) {
+	var conf = config || {};
+	
+	this.feedChildNodesUrl = conf.urls.feedChildNodesUrl;
+	this.feedTreeScopeNodesUrl = conf.urls.feedTreeScopeNodesUrl;
+	this.enableDragAndDrop = conf.enableDragAndDrop;
+	if (this.enableDragAndDrop) {
+		// default scroll container
+		this.dragAndDropScrollContainer = conf.dragAndDropScrollContainer || this.treeUl.parentNode;
+	}
+	
+	// callback events
+	this.onStartFeedChildNodes = conf.onStartFeedChildNodes;
+	this.onSuccessFeedChildNodes = conf.onSuccessFeedChildNodes;
+	this.onStartFeedTreeScopeNodes = conf.onStartFeedTreeScopeNodes;
+	this.onSuccessFeedTreeScopeNodes = conf.onSuccessFeedTreeScopeNodes;
+}
 
 /**
  * Начальная инициализация дерева
  */
-tabaga.TreeControl.prototype.init = function() {
-	// запомнить объект дерева в DOM элементе дерева
-	//this.treeUlHtml = document.getElementById(this.treeId);
+tabaga.TreeControl.prototype.init = function(rootNodes) {
 	
 	this.treeUl.tree = this; // use only for history. need refactoring
-	this.appendNewNodes(this.treeUl, this.treeObject);
+	this.appendNewNodes(this.treeUl, rootNodes);
 };
+
+tabaga.TreeControl.prototype.setDragAndDropScrollContainer = function(dragAndDropScrollContainer) {
+	this.dragAndDropScrollContainer = dragAndDropScrollContainer;
+};
+
+/**
+ * Получает массив моделей узлов содержащихся в UL контейнере
+ */
+tabaga.TreeControl.prototype.getNodeModelsByUlContainer = function(ulContainer) {
+	var nodes = [];
+	for ( var i = 0; ulContainer.childNodes[i]; i++) {
+		var child = ulContainer.childNodes[i];
+		if (child.nodeName.toLowerCase() == "li") {
+			nodes.push(child.nodeModel);
+		}
+	}
+	
+	console.log("get nodes: " + nodes);
+	return nodes;
+}
 
 /**
  * Обновляет содержимое существующего контейнера узлов UL
  */
 tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
-		ulContainer, newNodes, oldNodes) {
+		ulContainer, newNodes) {
+	var oldNodes = null;
+	if (ulContainer) { 
+		oldNodes = this.getNodeModelsByUlContainer(ulContainer);
+	}
+	
 	if (oldNodes == null) {
 		//console.error("Old nodes must not be null");
 	}
@@ -229,7 +263,7 @@ tabaga.TreeControl.prototype.updateExistNode = function(nodeLi, newNodeModel) {
 	}
 
 	var ulContainer = nodeLi.subnodesUl;
-	this.updateExistUlNodesContainer(ulContainer, newSubnodes, oldSubnodes);
+	this.updateExistUlNodesContainer(ulContainer, newSubnodes);
 };
 
 /**
@@ -269,7 +303,7 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
  * Установка для элемента узла span возможности перемещения в под выбранный узел
  */
 tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeSpan) {
-	new tabaga.DragObject(nodeSpan, this.treeUl.parentNode);
+	new tabaga.DragObject(nodeSpan, this.dragAndDropScrollContainer);
 	new tabaga.DropTarget(nodeSpan);
 };
 
@@ -383,8 +417,10 @@ tabaga.TreeControl.prototype.updateVisualNodeLi = function(nodeLi, newNode) {
  *            обновляемый узел
  */
 tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
-	console.log("Start loading feedChildNodes");
-	utils.showLoadingStatus(true);
+	if (this.onStartFeedChildNodes) {
+		this.onStartFeedChildNodes(nodeLi);
+	}
+	
 	var nodeModel = nodeLi.nodeModel;
 	var mytree = this;
 	$.ajax({
@@ -396,7 +432,9 @@ tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
 		success : function(loadedData) {
 			// loadedData is array
 			mytree.updateExistNode(nodeLi, loadedData[0]);
-			utils.showLoadingStatus(false);
+			if (this.onSuccessFeedChildNodes) {
+				this.onSuccessFeedChildNodes(nodeLi);
+			}
 		}
 	});
 };
@@ -408,8 +446,10 @@ tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
  *            обновляемый узел
  */
 tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId) {
-	console.log("Start loading feedTreeScopeNodes");
-	utils.showLoadingStatus(true);
+	if (this.onStartFeedTreeScopeNodes) {
+		this.onStartFeedTreeScopeNodes(nodeId);
+	}
+	
 	var mytree = this;
 	$.ajax({
 		url : this.feedTreeScopeNodesUrl,
@@ -419,16 +459,20 @@ tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId) {
 		},
 		success : function(loadedData) {
 			mytree.updateExistUlNodesContainer(mytree.treeUl,
-					loadedData, mytree.treeObject);
+					loadedData);
 			
 			// loadedData is array
-			var nodeLi = document.getElementById(nodeId);
+			
 			//mytree.updateExistNode(nodeLi, loadedData[0]);
 			
-			mytree.treeObject = loadedData;
+			//mytree.treeObject = loadedData;
 			
+			var nodeLi = document.getElementById(nodeId);
 			mytree.openNode(nodeLi, false);
-			utils.showLoadingStatus(false);
+			
+			if (this.onSuccessFeedTreeScopeNodes) {
+				this.onSuccessFeedTreeScopeNodes(nodeLi);
+			}
 		}
 	});
 };

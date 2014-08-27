@@ -4,7 +4,7 @@ tabaga.DragObject = function(element, elementScrollContainer) {
 
 	this.dragScrollContainer = null;
 	if (elementScrollContainer) {
-		this.dragScrollContainer = new DragScrollContainer(
+		this.dragScrollContainer = new tabaga.DragScrollContainer(
 				elementScrollContainer);
 	}
 
@@ -26,16 +26,18 @@ tabaga.DragObject = function(element, elementScrollContainer) {
 tabaga.DragObject.prototype.onDragStart = function(offset) {
 	this.objectClone = document.createElement("span");
 	this.objectClone.setAttribute("class", "menu");
-	this.objectClone.innerHTML = element.innerHTML;
+	this.objectClone.innerHTML = this.element.innerHTML;
 	this.objectClone.style.position = 'absolute';
-	this.document.body.appendChild(objectClone);
+	document.body.appendChild(this.objectClone);
 
 	/*
 	 * var s = element.style; rememberPosition = { top : s.top, left : s.left,
 	 * position : s.position };
 	 */
 	// s.position = 'absolute';
-	this.dragScrollContainer.onDragStart();
+	if (this.dragScrollContainer) {
+		this.dragScrollContainer.onDragStart();
+	}
 
 	this.mouseOffset = offset;
 };
@@ -45,17 +47,19 @@ tabaga.DragObject.prototype.hide = function() {
 };
 
 tabaga.DragObject.prototype.show = function() {
-	this.bjectClone.style.visibility = 'visible';
+	this.objectClone.style.visibility = 'visible';
 };
 
 tabaga.DragObject.prototype.onDragMove = function(x, y) {
 	// element.style.top = y - mouseOffset.y + 'px';
 	// element.style.left = x - mouseOffset.x + 'px';
 
-	this.objectClone.style.top = y - mouseOffset.y + 'px';
-	this.objectClone.style.left = x - mouseOffset.x + 'px';
+	this.objectClone.style.top = y - this.mouseOffset.y + 'px';
+	this.objectClone.style.left = x - this.mouseOffset.x + 'px';
 
-	this.dragScrollContainer.onDragMove(x, y);
+	if (this.dragScrollContainer) {
+		this.dragScrollContainer.onDragMove(x, y);
+	}
 
 	// container.scrollTop = container.scrollTop - (x - startX);
 	// container.scrollLeft=container.scrollLeft + (y-startY);
@@ -74,9 +78,9 @@ tabaga.DragObject.prototype.onDragFail = function() {
 };
 
 tabaga.DragObject.prototype.toString = function() {
-	return element.id;
+	return this.element.id;
 };
 
 tabaga.DragObject.prototype.getId = function() {
-	return element.id;
+	return this.element.id;
 };

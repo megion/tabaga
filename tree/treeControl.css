@@ -1,0 +1,107 @@
+@CHARSET "UTF-8";
+
+.treeview, .treeview ul {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.treeview ul {
+	/*background-color: white;*/
+	margin-top: 4px;
+}
+
+.treeview a.treenode {
+	color: #222222;
+}
+
+.treeview span.treenode {
+	width: 100%;
+	display: block;
+}
+
+.treeview span.menu {
+	/*background: url("images/folder.gif") no-repeat scroll 0 0 transparent;
+    padding: 1px 0 1px 16px;
+    width: 100%;
+    */
+	display: block;
+	color: #505050;
+	white-space: nowrap;
+	font: 14px sans-serif, arial;
+	border: 1px solid white;
+}
+
+.treeview span.menu:hover {
+	cursor: pointer;
+}
+
+.treeview span.selected {
+	background-color: #E5ECF9;
+	color: black;
+	padding: 0px;
+}
+
+/*.treeview span.hover {
+	color: #1155cc;
+}*/
+
+/****************************************************
+ * Перезаписать свойства из файла jquery.treeview.css 
+ */
+.treeview .hitarea {
+	background: url(images/toggle-collapse-dark.png) no-repeat !important;
+	height: 16px;
+	width: 16px;
+	margin-left: -16px;
+	float: left;
+	cursor: pointer;
+}
+
+.treeview li {
+	background: none no-repeat;
+}
+
+.treeview li.opened,
+.treeview li.closed {
+	/*background-position: 0 -176px;*/
+	background-image: none;
+}
+
+.treeview .closed-hitarea {
+	background-image: url(images/toggle-expand-dark.png);
+}
+
+.treeview li.last {
+	background-image: none;
+}
+
+.treeview li.lastOpened,
+.treeview li.lastClosed {
+	background-image: none;
+}
+
+.treeview li.lastOpened {
+	/*background-image: url(images/toggle-collapse-dark.png) !important;*/
+}
+
+.treeview li.lastClosed {
+	/*background-image: url(images/toggle-expand-dark.png) !important;*/
+}
+
+.treeview div.lastOpened-hitarea,
+.treeview div.lastClosed-hitarea {
+	background-image: none;
+}
+
+.filetree li {
+	padding: 3px 0 2px 24px;
+}
+
+.filetree span.folder,.filetree span.file {
+	padding: 1px 0 1px 16px;
+}
+
+/*.filetree li {
+    padding: 1px 0px 1px 16px !important;
+}*/
