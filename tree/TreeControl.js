@@ -430,8 +430,8 @@ tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
 		success : function(loadedData) {
 			// loadedData is array
 			mytree.updateExistNode(nodeLi, loadedData[0]);
-			if (this.onSuccessFeedChildNodes) {
-				this.onSuccessFeedChildNodes(nodeLi);
+			if (mytree.onSuccessFeedChildNodes) {
+				mytree.onSuccessFeedChildNodes(nodeLi);
 			}
 		}
 	});
@@ -468,8 +468,8 @@ tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId) {
 			var nodeLi = document.getElementById(nodeId);
 			mytree.openNode(nodeLi, false);
 			
-			if (this.onSuccessFeedTreeScopeNodes) {
-				this.onSuccessFeedTreeScopeNodes(nodeLi);
+			if (mytree.onSuccessFeedTreeScopeNodes) {
+				mytree.onSuccessFeedTreeScopeNodes(nodeLi);
 			}
 		}
 	});
