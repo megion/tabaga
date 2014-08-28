@@ -96,10 +96,11 @@ tabaga.TreeControl.prototype.configure = function(config) {
 	
 	this.feedChildNodesUrl = conf.urls.feedChildNodesUrl;
 	this.feedTreeScopeNodesUrl = conf.urls.feedTreeScopeNodesUrl;
-	this.enableDragAndDrop = conf.enableDragAndDrop;
+	this.enableDragAndDrop = conf.dragAndDrop?true:false;
 	if (this.enableDragAndDrop) {
+		this.dragAndDropConfig = conf.dragAndDrop;
 		// default scroll container
-		this.dragAndDropScrollContainer = conf.dragAndDropScrollContainer || this.treeUl.parentNode;
+		this.dragAndDropConfig.scrollContainer = this.dragAndDropConfig.scrollContainer || this.treeUl.parentNode;
 	}
 	
 	// callback events
@@ -107,6 +108,7 @@ tabaga.TreeControl.prototype.configure = function(config) {
 	this.onSuccessFeedChildNodes = conf.onSuccessFeedChildNodes;
 	this.onStartFeedTreeScopeNodes = conf.onStartFeedTreeScopeNodes;
 	this.onSuccessFeedTreeScopeNodes = conf.onSuccessFeedTreeScopeNodes;
+	this.onDropTargetAcceptDragObject = conf.onDropTargetAcceptDragObject;
 }
 
 /**
@@ -116,10 +118,6 @@ tabaga.TreeControl.prototype.init = function(rootNodes) {
 	
 	this.treeUl.tree = this; // use only for history. need refactoring
 	this.appendNewNodes(this.treeUl, rootNodes);
-};
-
-tabaga.TreeControl.prototype.setDragAndDropScrollContainer = function(dragAndDropScrollContainer) {
-	this.dragAndDropScrollContainer = dragAndDropScrollContainer;
 };
 
 /**
@@ -300,11 +298,11 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
 };
 
 /**
- * Установка для элемента узла span возможности перемещения в под выбранный узел
+ * Установка для элемента узла span возможности перемещения под выбранный узел
  */
 tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeSpan) {
-	new tabaga.DragObject(nodeSpan, this.dragAndDropScrollContainer);
-	new tabaga.DropTarget(nodeSpan);
+	new tabaga.DragObject(nodeSpan, this.dragAndDropConfig);
+	new tabaga.DropTarget(nodeSpan, this.dragAndDropConfig);
 };
 
 /**

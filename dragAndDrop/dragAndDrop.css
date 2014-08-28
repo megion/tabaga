@@ -16,10 +16,11 @@
 
 .enterOverTarget {
 	border-top: 1px solid green !important;
-	background-color: #daeec1
+	background-color: #daeec1;
 }
 
 .enterUnderTarget {
 	border-bottom: 1px solid green !important;
+	background-color: #daeec1;
 }
 

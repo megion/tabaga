@@ -1,11 +1,11 @@
-tabaga.DragObject = function(element, elementScrollContainer) {
+tabaga.DragObject = function(element, config) {
 	this.element = element;
 	this.element.dragObject = this;
 
 	this.dragScrollContainer = null;
-	if (elementScrollContainer) {
+	if (config.scrollContainer) {
 		this.dragScrollContainer = new tabaga.DragScrollContainer(
-				elementScrollContainer);
+				config.scrollContainer);
 	}
 
 	tabaga.dragMaster.makeDraggable(this.element);
@@ -25,16 +25,10 @@ tabaga.DragObject = function(element, elementScrollContainer) {
  */
 tabaga.DragObject.prototype.onDragStart = function(offset) {
 	this.objectClone = document.createElement("span");
-	this.objectClone.setAttribute("class", "menu");
 	this.objectClone.innerHTML = this.element.innerHTML;
 	this.objectClone.style.position = 'absolute';
 	document.body.appendChild(this.objectClone);
-
-	/*
-	 * var s = element.style; rememberPosition = { top : s.top, left : s.left,
-	 * position : s.position };
-	 */
-	// s.position = 'absolute';
+	
 	if (this.dragScrollContainer) {
 		this.dragScrollContainer.onDragStart();
 	}
