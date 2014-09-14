@@ -1,11 +1,11 @@
-tabaga.DragObject = function(element, config) {
+tabaga.DragObject = function(element, scrollContainer) {
 	this.element = element;
 	this.element.dragObject = this;
 
 	this.dragScrollContainer = null;
-	if (config.scrollContainer) {
+	if (scrollContainer) {
 		this.dragScrollContainer = new tabaga.DragScrollContainer(
-				config.scrollContainer);
+				scrollContainer);
 	}
 
 	tabaga.dragMaster.makeDraggable(this.element);

@@ -8,15 +8,13 @@
  * @param element
  * @returns {DropTarget}
  */
-tabaga.DropTarget = function(element, config) {
+tabaga.DropTarget = function(element) {
 	element.dropTarget = this;
 	this.element = element;
 
 	this.rememberClassName = null;
 	this.position = null;
 	this.state = null;
-	this.onAcceptDragObject = config.onAcceptDragObject;
-	this.disableDefaultCallCompleteAccept = config.disableDefaultCallCompleteAccept;
 };
 
 /**
@@ -38,23 +36,14 @@ tabaga.DropTarget.prototype.canAccept = function(dragObject) {
 	return true;
 };
 
-tabaga.DropTarget.prototype.completeAccept = function(dragObject) {
-	dragObject.hide();
-	dragObject.onDragSuccess(this);
-	this.onLeave();
-}
-
 /**
  * Принимает переносимый объект. Объект может быть перемещен(в другой каталог)
  * или уничтожен(корзина) - зависит от вашей логики обработки переноса.
  */
 tabaga.DropTarget.prototype.accept = function(dragObject) {
-	if (this.onAcceptDragObject) {
-		this.onAcceptDragObject(this, dragObject, this.state);
-	}
-	if (!this.disableDefaultCallCompleteAccept) {
-		this.completeAccept(dragObject);
-	}
+	dragObject.hide();
+	dragObject.onDragSuccess(this);
+	this.onLeave();
 };
 
 tabaga.DropTarget.prototype.onLeave = function() {

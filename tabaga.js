@@ -69,6 +69,8 @@ tabaga.emptyFalseFn = function() {
 	return false;
 };
 
+tabaga.treeMap = [];
+
 //
 (function($) {
 	/**
@@ -81,12 +83,13 @@ tabaga.emptyFalseFn = function() {
 	    //dragAndDropScrollContainer: null
 	}
 	 */
-	$.fn.createTreeControl = function(config, rootNodes) {	
+	$.fn.createTreeControl = function(id, config, rootNodes) {	
 		var tree = $(this);
 		
-		var treeControl = new tabaga.TreeControl("1", tree[0]);
+		var treeControl = new tabaga.TreeControl(id, tree[0]);
 		treeControl.configure(config);
 		treeControl.init(rootNodes);
+		treeMap.put(treeControl);
 		
 		return treeControl;
 	}
