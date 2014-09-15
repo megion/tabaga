@@ -617,11 +617,11 @@ tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
  * @returns {String}
  */
 tabaga.TreeControl.prototype.getNodeHash = function(nodeLi) {
-	var id = nodeLi.nodeModel.id;
+	var nodeId = nodeLi.nodeModel.id;
 	if (nodeLi.opened!=null && !nodeLi.opened) {
-		id = id + "?state=closed";
+		nodeId = nodeId + "?state=closed";
 	}
-	return "id-" + id;
+	return "id-" + nodeId;
 };
 
 tabaga.TreeControl.prototype.getNodeInfoByAnchor = function(anchor) {
