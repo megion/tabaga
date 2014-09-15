@@ -4,7 +4,11 @@
 tabaga.stringSerialization = (function() {
 	
 	function splitStr(str) {
-		return decodeURIComponent(str).split(';');
+		return str.split(';');//decodeURIComponent(str).split(';');
+	}
+	
+	function joinParts(parts) {
+		return parts.join(';');
 	}
 	
 	function parsePart(part) {
@@ -13,6 +17,10 @@ tabaga.stringSerialization = (function() {
 			key: part.substring(0, keyValueSplitIndex),
 			value: part.substring(keyValueSplitIndex+1, part.length)
 		};
+	}
+	
+	function toPart(entry) {
+		return entry.key + "?" + entry.value;
 	}
 	
 	return {
@@ -35,16 +43,30 @@ tabaga.stringSerialization = (function() {
 				var part = parts[i];
 				var entry = parsePart(part);
 				if (entry.key==key) {
-					return entry.value;
+					// update
+					entry.value = value;
+					parts[i] = toPart(entry);
+					return joinParts(parts);
 				}
 			}
 			
-			parts.push(); //
-			return "new"
+			// put new
+			parts.push(toPart({key: key, value: value}));
+			return joinParts(parts);
 		},
 		
-		removeValue : function(id, str) {
-			return "";
+		removeValue : function(key, str) {
+			var parts = splitStr(str);
+			for (var i = 0; i < parts.length; i++) {
+				var part = parts[i];
+				var entry = parsePart(part);
+				if (entry.key==key) {
+					// remove
+					parts.splice(i, 1);
+					return joinParts(parts);
+				}
+			}
+			return str;
 		} 
 	};
 }());
