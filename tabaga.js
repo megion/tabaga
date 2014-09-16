@@ -79,8 +79,6 @@ tabaga.widjets = [];
  * @param anchor
  */
 tabaga.pageload = function (hash) {
-	//var treeUl = document.getElementById("treePages");
-	//var treeControl = treeUl.tree;
 	for (var i = 0; i < tabaga.widjets.length; i++) {
 		tabaga.widjets[i].detectAnchor(hash);
 	}
@@ -90,11 +88,6 @@ tabaga.pageload = function (hash) {
  * Initialize and use browser history
  */
 $(document).ready(function() {
-	//if ($.browser.msie && $.browser.version == 8) {
-		// Logger.append('You are using IE8 in version ' + document.documentMode
-		// + ' compatible mode.');
-	//}
-	// Logger.append('The plugin is running in ' + $.history.type + ' mode.');
 	$.history.init(tabaga.pageload);
 });
 
@@ -121,4 +114,5 @@ $(document).ready(function() {
 		
 		return treeControl;
 	}
+	
 })(jQuery);

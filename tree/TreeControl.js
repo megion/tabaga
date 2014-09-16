@@ -21,8 +21,6 @@ tabaga.onSelectTreeNode = function(event) {
 	var newAnchor = tabaga.stringSerialization.putValue(treeControl.id, hash, curAnchor);
 	console.info("newAnchor: " + newAnchor);
 	$.history.load(newAnchor);
-	//treeControl.selectTreeNode(this, true, false, setClosed);
-	//alert("Li selected: " + this.id);
 
 	return false;
 };
@@ -85,7 +83,6 @@ tabaga.TreeControl.prototype.configure = function(config) {
  * Начальная инициализация дерева
  */
 tabaga.TreeControl.prototype.init = function(rootNodes) {
-	this.treeUl.tree = this; // use only for history. need refactoring
 	this.appendNewNodes(this.treeUl, rootNodes);
 };
 
@@ -482,7 +479,7 @@ tabaga.TreeControl.prototype.processAllParentNode = function(nodeLi,
 		processNode) {
 	var nodeUl = nodeLi.parentNode;
 	if (nodeUl.nodeName.toLowerCase() == "ul") {
-		if (nodeUl.id && nodeUl.id == this.treeUl.id) {
+		if (nodeUl == this.treeUl) {
 			// конец дерева
 			return;
 		}
