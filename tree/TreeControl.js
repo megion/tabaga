@@ -1,9 +1,3 @@
-
-tabaga.loadHistory = function (hash) {
-	// Logger.append('[load history] hash=' + hash);
-	$.history.load(hash);
-};
-
 /**
  * Обработчик события выделения узла дерева
  */
@@ -20,38 +14,18 @@ tabaga.onSelectTreeNode = function(event) {
 	var treeControl = this.treeControl;
 	var setClosed = (this.opened==null?false:this.opened);
 	this.opened = !setClosed;
-	var nodeHash = treeControl.getNodeHash(this);
-	tabaga.loadHistory(nodeHash);
+	var hash = treeControl.getNodeHash(this);
+	
+	var curAnchor = decodeURIComponent(location.hash.slice(1));
+	console.info("curAnchor: " + curAnchor);
+	var newAnchor = tabaga.stringSerialization.putValue(treeControl.id, hash, curAnchor);
+	console.info("newAnchor: " + newAnchor);
+	$.history.load(newAnchor);
 	//treeControl.selectTreeNode(this, true, false, setClosed);
 	//alert("Li selected: " + this.id);
 
 	return false;
 };
-
-
-
-/**
- * History call back. Load new content form server by AJAX.
- * 
- * @param anchor
- */
-tabaga.pageload = function (hash) {
-	var treeUl = document.getElementById("treePages");
-	var treeControl = treeUl.tree;
-	treeControl.detectAnchor(hash);
-};
-
-/**
- * Initialize and use browser history
- */
-$(document).ready(function() {
-	//if ($.browser.msie && $.browser.version == 8) {
-		// Logger.append('You are using IE8 in version ' + document.documentMode
-		// + ' compatible mode.');
-	//}
-	// Logger.append('The plugin is running in ' + $.history.type + ' mode.');
-	$.history.init(tabaga.pageload);
-});
 
 /**
  * Предопределенные CSS классы для дерева
@@ -306,7 +280,7 @@ tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeSpan) {
  */
 tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var newLi = document.createElement("li");
-	newLi.setAttribute("id", newNode.id);
+	newLi.setAttribute("id", this.id + "-" + newNode.id);
 	newLi.onclick = tabaga.onSelectTreeNode;
 	parentUl.appendChild(newLi);
 
@@ -315,7 +289,7 @@ tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var hasChildren = (subnodes != null && subnodes.length > 0);
 
 	var nodeSpan = document.createElement("span");
-	nodeSpan.setAttribute("id", "s" + newNode.id);
+	nodeSpan.setAttribute("id", this.id + "-" + "s" + newNode.id);
 	nodeSpan.setAttribute("class", tabaga.LINE_TREE_CLASSES.treeNode);
 	nodeSpan.innerHTML = newNode.title;
 	newLi.appendChild(nodeSpan);
@@ -461,7 +435,7 @@ tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId) {
 			
 			//mytree.treeObject = loadedData;
 			
-			var nodeLi = document.getElementById(nodeId);
+			var nodeLi = document.getElementById(mytree.id + "-" + nodeId);
 			mytree.openNode(nodeLi, false);
 			
 			if (mytree.onSuccessFeedTreeScopeNodes) {
@@ -619,13 +593,13 @@ tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
 tabaga.TreeControl.prototype.getNodeHash = function(nodeLi) {
 	var nodeId = nodeLi.nodeModel.id;
 	if (nodeLi.opened!=null && !nodeLi.opened) {
-		nodeId = nodeId + "?state=closed";
+		nodeId = nodeId + "&state=closed";
 	}
 	return "id-" + nodeId;
 };
 
 tabaga.TreeControl.prototype.getNodeInfoByAnchor = function(anchor) {
-	var parts = decodeURIComponent(anchor).split('?');
+	var parts = anchor.split('&');//decodeURIComponent(anchor).split('&');
 	var path = parts.shift();
 	var setClosed = false;
 	if (parts.length) {
@@ -644,7 +618,11 @@ tabaga.TreeControl.prototype.getNodeInfoByAnchor = function(anchor) {
 
 tabaga.TreeControl.prototype.detectAnchor = function(anchor) {
 	if (anchor) {
-		var nodeInfo = this.getNodeInfoByAnchor(anchor);
+		var treeHash = tabaga.stringSerialization.getValue(this.id, decodeURIComponent(anchor));
+		if (!treeHash) {
+			return;
+		}
+		var nodeInfo = this.getNodeInfoByAnchor(treeHash);
 		var nodeModel = this.allNodesMap[nodeInfo.nodeId];
 		if (nodeModel && !nodeModel.fakeNode) {
 			this.openNode(nodeModel.nodeLi, nodeInfo.setClosed);

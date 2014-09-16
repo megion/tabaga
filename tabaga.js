@@ -69,7 +69,34 @@ tabaga.emptyFalseFn = function() {
 	return false;
 };
 
-tabaga.treeMap = [];
+
+
+tabaga.widjets = [];
+
+/**
+ * History call back. Load new content form server by AJAX.
+ * 
+ * @param anchor
+ */
+tabaga.pageload = function (hash) {
+	//var treeUl = document.getElementById("treePages");
+	//var treeControl = treeUl.tree;
+	for (var i = 0; i < tabaga.widjets.length; i++) {
+		tabaga.widjets[i].detectAnchor(hash);
+	}
+};
+
+/**
+ * Initialize and use browser history
+ */
+$(document).ready(function() {
+	//if ($.browser.msie && $.browser.version == 8) {
+		// Logger.append('You are using IE8 in version ' + document.documentMode
+		// + ' compatible mode.');
+	//}
+	// Logger.append('The plugin is running in ' + $.history.type + ' mode.');
+	$.history.init(tabaga.pageload);
+});
 
 //
 (function($) {
@@ -89,7 +116,8 @@ tabaga.treeMap = [];
 		var treeControl = new tabaga.TreeControl(id, tree[0]);
 		treeControl.configure(config);
 		treeControl.init(rootNodes);
-		treeMap.put(treeControl);
+		
+		tabaga.widjets.push(treeControl);
 		
 		return treeControl;
 	}

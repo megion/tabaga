@@ -13,6 +13,10 @@ tabaga.stringSerialization = (function() {
 	
 	function parsePart(part) {
 		var keyValueSplitIndex = part.indexOf("?");
+		if (keyValueSplitIndex<1) {
+			// key not found
+			return null;
+		}
 		return {
 			key: part.substring(0, keyValueSplitIndex),
 			value: part.substring(keyValueSplitIndex+1, part.length)
@@ -30,7 +34,7 @@ tabaga.stringSerialization = (function() {
 			for (var i = 0; i < parts.length; i++) {
 				var part = parts[i];
 				var entry = parsePart(part);
-				if (entry.key==key) {
+				if (entry && entry.key==key) {
 					return entry.value;
 				}
 			}
@@ -38,11 +42,16 @@ tabaga.stringSerialization = (function() {
 		},
 		
 		putValue : function(key, value, str) {
+			if(str.length==0) {
+				return toPart({key: key, value: value});
+			}
+			
 			var parts = splitStr(str);
+			
 			for (var i = 0; i < parts.length; i++) {
 				var part = parts[i];
 				var entry = parsePart(part);
-				if (entry.key==key) {
+				if (entry && entry.key==key) {
 					// update
 					entry.value = value;
 					parts[i] = toPart(entry);
