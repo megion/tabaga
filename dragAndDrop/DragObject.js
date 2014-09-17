@@ -27,6 +27,7 @@ tabaga.DragObject.prototype.onDragStart = function(offset) {
 	this.objectClone = document.createElement("span");
 	this.objectClone.innerHTML = this.element.innerHTML;
 	this.objectClone.style.position = 'absolute';
+	this.objectClone.className = "dragObjectClone";
 	document.body.appendChild(this.objectClone);
 	
 	if (this.dragScrollContainer) {
@@ -69,12 +70,4 @@ tabaga.DragObject.prototype.onDragFail = function() {
 	// s.position = rememberPosition.position;
 	document.body.removeChild(this.objectClone);
 	this.objectClone = null;
-};
-
-tabaga.DragObject.prototype.toString = function() {
-	return this.element.id;
-};
-
-tabaga.DragObject.prototype.getId = function() {
-	return this.element.id;
 };

@@ -29,7 +29,7 @@ tabaga.DropTarget.UNDER = 3; // переместить под объект
  * он принять dragObject. Если нет - dragMaster проигнорирует этот акцептор.
  */
 tabaga.DropTarget.prototype.canAccept = function(dragObject) {
-	if (this.element.id == dragObject.getId()) {
+	if (this.element == dragObject.element) {
 		// запрет принимать объект в самого себя
 		return false;
 	}

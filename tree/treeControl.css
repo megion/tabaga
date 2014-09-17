@@ -50,7 +50,7 @@
  * Перезаписать свойства из файла jquery.treeview.css 
  */
 .treeview .hitarea {
-	background: url(images/toggle-collapse-dark.png) no-repeat !important;
+	/*background: url(images/toggle-collapse-dark.png) no-repeat !important;*/
 	height: 16px;
 	width: 16px;
 	margin-left: -16px;
@@ -68,8 +68,11 @@
 	background-image: none;
 }
 
-.treeview .closed-hitarea {
+.treeview .opened-hitarea {
 	background-image: url(images/toggle-expand-dark.png);
+}
+.treeview .closed-hitarea {
+	background-image: url(images/toggle-collapse-dark.png);
 }
 
 .treeview li.last {
@@ -91,7 +94,7 @@
 
 .treeview div.lastOpened-hitarea,
 .treeview div.lastClosed-hitarea {
-	background-image: none;
+	/*background-image: none;*/
 }
 
 .filetree li {
