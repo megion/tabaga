@@ -69,10 +69,10 @@
 }
 
 .treeview .opened-hitarea {
-	background-image: url(images/toggle-expand-dark.png);
+	background-image: url(images/toggle-collapse-dark.png);
 }
 .treeview .closed-hitarea {
-	background-image: url(images/toggle-collapse-dark.png);
+	background-image: url(images/toggle-expand-dark.png);
 }
 
 .treeview li.last {

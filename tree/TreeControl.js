@@ -16,7 +16,7 @@ tabaga.onSelectTreeNode = function(event) {
 	var hash = treeControl.getNodeHash(this);
 	
 	var curAnchor = decodeURIComponent(location.hash.slice(1));
-	var newAnchor = tabaga.stringSerialization.putValue(treeControl.id, hash, curAnchor);
+	var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
 	jQuery.history.load(newAnchor);
 
 	return false;
@@ -587,7 +587,7 @@ tabaga.TreeControl.prototype.getNodeInfoByAnchor = function(anchor) {
 
 tabaga.TreeControl.prototype.detectAnchor = function(anchor) {
 	if (anchor) {
-		var treeHash = tabaga.stringSerialization.getValue(this.id, decodeURIComponent(anchor));
+		var treeHash = tabaga.historyMaster.getValue(this.id, decodeURIComponent(anchor));
 		if (!treeHash) {
 			return;
 		}
