@@ -106,7 +106,8 @@ $(document).ready(function() {
 	$.fn.createTreeControl = function(id, config, rootNodes) {	
 		var tree = $(this);
 		
-		var treeControl = new tabaga.TreeControl(id, tree[0]);
+		config.TreeControlConstructor = config.TreeControlConstructor || tabaga.TreeControl;
+		var treeControl = new config.TreeControlConstructor(id, tree[0]);
 		treeControl.configure(config);
 		treeControl.init(rootNodes);
 		

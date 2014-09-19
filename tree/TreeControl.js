@@ -1,28 +1,4 @@
 /**
- * Обработчик события выделения узла дерева
- */
-tabaga.onSelectTreeNode = function(event) {
-	// IE
-	if ($.browser.msie) {
-		window.event.cancelBubble = true;
-	}
-	if (event.stopPropagation) {
-		event.stopPropagation();
-	}
-
-	var treeControl = this.treeControl;
-	var setClosed = (this.opened==null?false:this.opened);
-	this.opened = !setClosed;
-	var hash = treeControl.getNodeHash(this);
-	
-	var curAnchor = decodeURIComponent(location.hash.slice(1));
-	var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
-	jQuery.history.load(newAnchor);
-
-	return false;
-};
-
-/**
  * Предопределенные CSS классы для дерева
  */
 tabaga.LINE_TREE_CLASSES = {
@@ -66,6 +42,8 @@ tabaga.TreeControl.prototype.configure = function(config) {
 	this.enableDragAndDrop = conf.dragAndDrop?true:false;
 	if (this.enableDragAndDrop) {
 		this.dragAndDropConfig = conf.dragAndDrop;
+		this.dragAndDropConfig.DropTargetConstructor = this.dragAndDropConfig.DropTargetConstructor || tabaga.DropTarget;
+		
 	}
 	
 	// callback events
@@ -81,6 +59,32 @@ tabaga.TreeControl.prototype.configure = function(config) {
  */
 tabaga.TreeControl.prototype.init = function(rootNodes) {
 	this.appendNewNodes(this.treeUl, rootNodes);
+};
+
+/**
+ * Обработчик события выделения узла дерева
+ */
+tabaga.TreeControl.prototype.onSelectTreeNode = function(event) {
+	// IE
+	if ($.browser.msie) {
+		window.event.cancelBubble = true;
+	}
+	if (event.stopPropagation) {
+		event.stopPropagation();
+	}
+	
+	var nodeLi = this; // т.к. событие на узле Li
+
+	var treeControl = nodeLi.treeControl;
+	var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+	nodeLi.opened = !setClosed;
+	var hash = treeControl.getNodeHash(this);
+	
+	var curAnchor = decodeURIComponent(location.hash.slice(1));
+	var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
+	jQuery.history.load(newAnchor);
+
+	return false;
 };
 
 /**
@@ -255,7 +259,7 @@ tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeLi) {
  */
 tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var newLi = document.createElement("li");
-	newLi.onclick = tabaga.onSelectTreeNode;
+	newLi.onclick = this.onSelectTreeNode;
 	parentUl.appendChild(newLi);
 
 	var subnodes = newNode.children;
