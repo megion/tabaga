@@ -35,23 +35,12 @@ tabaga.TreeControl = function(id, treeUl) {
  * Установка конфигурации дерева
  */
 tabaga.TreeControl.prototype.configure = function(config) {
-	var conf = config || {};
-	
-	this.feedChildNodesUrl = conf.urls.feedChildNodesUrl;
-	this.feedTreeScopeNodesUrl = conf.urls.feedTreeScopeNodesUrl;
-	this.enableDragAndDrop = conf.dragAndDrop?true:false;
+	this.conf = config || {};
+	this.enableDragAndDrop = this.conf.dragAndDrop?true:false;
 	if (this.enableDragAndDrop) {
-		this.dragAndDropConfig = conf.dragAndDrop;
+		this.dragAndDropConfig = this.conf.dragAndDrop;
 		this.dragAndDropConfig.DropTargetConstructor = this.dragAndDropConfig.DropTargetConstructor || tabaga.DropTarget;
-		
 	}
-	
-	// callback events
-	this.onStartFeedChildNodes = conf.onStartFeedChildNodes;
-	this.onSuccessFeedChildNodes = conf.onSuccessFeedChildNodes;
-	this.onStartFeedTreeScopeNodes = conf.onStartFeedTreeScopeNodes;
-	this.onSuccessFeedTreeScopeNodes = conf.onSuccessFeedTreeScopeNodes;
-	this.onDropTargetAcceptDragObject = conf.onDropTargetAcceptDragObject;
 }
 
 /**
@@ -357,33 +346,46 @@ tabaga.TreeControl.prototype.updateVisualNodeLi = function(nodeLi, newNode) {
 };
 
 /**
+ * Обработчик успешной загрузки данных для операции feed child nodes
+ */
+tabaga.TreeControl.prototype.onLoadChildNodes = function(nodeLi, loadedData) {
+	this.updateExistNode(nodeLi, loadedData);
+}
+
+/**
  * Загружает данные модели с сервера в виде JSON
  * 
  * @param nodeLiHtml -
  *            обновляемый узел
  */
 tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
-	if (this.onStartFeedChildNodes) {
-		this.onStartFeedChildNodes(nodeLi);
+	if (!config.loadChildNodes) {
+		console.error("Function loadChildNodes is not configured");
+		return;
 	}
 	
-	var nodeModel = nodeLi.nodeModel;
-	var mytree = this;
-	$.ajax({
-		url : this.feedChildNodesUrl,
-		dataType : "json",
-		data : {
-			"nodeId" : nodeModel.id
-		},
-		success : function(loadedData) {
-			// loadedData is array
-			mytree.updateExistNode(nodeLi, loadedData[0]);
-			if (mytree.onSuccessFeedChildNodes) {
-				mytree.onSuccessFeedChildNodes(nodeLi);
-			}
-		}
+	var self = this;
+	var nodeId = nodeLi.nodeModel.id;
+	config.loadChildNodes(nodeId, self, function(nodeId, loadedData) {
+		self.onLoadChildNodes(nodeLi, loadedData);
 	});
 };
+
+/**
+ * Обработчик успешной загрузки данных для операции feed tree scope
+ * @param nodeId
+ * @param setClosed
+ * @param loadedData
+ */
+tabaga.TreeControl.prototype.onLoadTreeScopeNodes = function(nodeId, setClosed, loadedData) {
+	this.updateExistUlNodesContainer(this.treeUl,
+			loadedData);
+	// find Li by node Id. Before update nodeModel may be null.
+	var nodeModel = this.allNodesMap[nodeId];
+	var nodeLi = nodeModel.nodeLi
+	
+	this.openNode(nodeLi, setClosed);
+}
 
 /**
  * Загружает данные модели с сервера в виде JSON
@@ -392,30 +394,13 @@ tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
  *            обновляемый узел
  */
 tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId, setClosed) {
-	if (this.onStartFeedTreeScopeNodes) {
-		this.onStartFeedTreeScopeNodes(nodeId);
+	if (!config.loadTreeScopeNodes) {
+		console.error("Function loadTreeScopeNodes is not configured");
+		return;
 	}
-	
-	var mytree = this;
-	$.ajax({
-		url : this.feedTreeScopeNodesUrl,
-		dataType : "json",
-		data : {
-			"nodeId" : nodeId
-		},
-		success : function(loadedData) {
-			mytree.updateExistUlNodesContainer(mytree.treeUl,
-					loadedData);
-			// find Li by node Id
-			var nodeModel = mytree.allNodesMap[nodeId];
-			var nodeLi = nodeModel.nodeLi
-			
-			mytree.openNode(nodeLi, setClosed);
-			
-			if (mytree.onSuccessFeedTreeScopeNodes) {
-				mytree.onSuccessFeedTreeScopeNodes(nodeLi);
-			}
-		}
+	var self = this;
+	config.loadTreeScopeNodes(nodeId, setClosed, self, function(nodeId, setClosed, loadedData) {
+		self.onLoadTreeScopeNodes(nodeId, setClosed, loadedData);
 	});
 };
 
