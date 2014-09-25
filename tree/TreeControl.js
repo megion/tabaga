@@ -27,6 +27,7 @@ tabaga.LINE_TREE_CLASSES = {
 tabaga.TreeControl = function(id, treeUl) {
 	this.id = id;
 	this.treeUl = treeUl;
+	this.treeUl.treeControl = this;
 	this.currentSelectedTreeNodeSpan = null;
 	this.allNodesMap = {};
 };
@@ -39,7 +40,9 @@ tabaga.TreeControl.prototype.configure = function(config) {
 	this.enableDragAndDrop = this.conf.dragAndDrop?true:false;
 	if (this.enableDragAndDrop) {
 		this.dragAndDropConfig = this.conf.dragAndDrop;
+		this.dragAndDropConfig.DragObjectConstructor = this.dragAndDropConfig.DragObjectConstructor || tabaga.DragObject;
 		this.dragAndDropConfig.DropTargetConstructor = this.dragAndDropConfig.DropTargetConstructor || tabaga.DropTarget;
+		this.dragAndDropConfig.DragScrollManagerConstructor = this.dragAndDropConfig.DragScrollManagerConstructor || tabaga.DragScrollManager;
 	}
 }
 
@@ -53,7 +56,7 @@ tabaga.TreeControl.prototype.init = function(rootNodes) {
 /**
  * Обработчик события выделения узла дерева
  */
-tabaga.TreeControl.prototype.onSelectTreeNode = function(event) {
+tabaga.TreeControl.prototype.onClickTreeNode = function(event) {
 	// IE
 	if ($.browser.msie) {
 		window.event.cancelBubble = true;
@@ -238,9 +241,40 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
  * Установка для элемента узла span возможности перемещения под выбранный узел
  */
 tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeLi) {
-	new tabaga.DragObject(nodeLi.nodeSpan, this.dragAndDropConfig.scrollContainer);
+	var dragObject = new this.dragAndDropConfig.DragObjectConstructor(nodeLi.nodeSpan);
 	
 	new this.dragAndDropConfig.DropTargetConstructor(nodeLi.nodeSpan);
+	
+	if (this.dragAndDropConfig.scrollContainer) {
+		dragObject.setScrollManager(new this.dragAndDropConfig.DragScrollManagerConstructor(
+				this.dragAndDropConfig.scrollContainer));
+	}
+	tabaga.TreeControl.prototype.makeDraggable(nodeLi);
+	
+};
+
+tabaga.TreeControl.prototype.makeDraggable = function(nodeLi) {
+	tabaga.dragMaster.makeDraggable(nodeLi.nodeSpan);
+};
+
+tabaga.TreeControl.prototype.makeUnDraggable = function(nodeLi) {
+	tabaga.dragMaster.makeUnDraggable(nodeLi.nodeSpan);
+};
+
+tabaga.TreeControl.prototype.makeAllDraggable = function() {
+	for(var nodeId in this.allNodesMap) {
+		var nodeModel = this.allNodesMap[nodeId];
+		var nodeLi = nodeModel.nodeLi;
+		tabaga.TreeControl.prototype.makeDraggable(nodeLi);
+	}
+};
+
+tabaga.TreeControl.prototype.makeAllUnDraggable = function() {
+	for(var nodeId in this.allNodesMap) {
+		var nodeModel = this.allNodesMap[nodeId];
+		var nodeLi = nodeModel.nodeLi;
+		tabaga.TreeControl.prototype.makeUnDraggable(nodeLi);
+	}
 };
 
 /**
@@ -248,7 +282,7 @@ tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeLi) {
  */
 tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var newLi = document.createElement("li");
-	newLi.onclick = this.onSelectTreeNode;
+	newLi.onclick = this.onClickTreeNode;
 	parentUl.appendChild(newLi);
 
 	var subnodes = newNode.children;

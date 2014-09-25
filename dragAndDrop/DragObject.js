@@ -1,18 +1,14 @@
-tabaga.DragObject = function(element, scrollContainer) {
+tabaga.DragObject = function(element) {
 	this.element = element;
 	this.element.dragObject = this;
-
-	this.dragScrollContainer = null;
-	if (scrollContainer) {
-		this.dragScrollContainer = new tabaga.DragScrollContainer(
-				scrollContainer);
-	}
-
-	tabaga.dragMaster.makeDraggable(this.element);
-
-	// var rememberPosition = null;
+	
+	this.scrollManager = null;
 	this.mouseOffset = null;
 	this.objectClone = null;
+}
+
+tabaga.DragObject.prototype.setScrollManager = function(scrollManager) {
+	this.scrollManager = scrollManager;
 }
 
 /**
@@ -30,8 +26,8 @@ tabaga.DragObject.prototype.onDragStart = function(offset) {
 	this.objectClone.className = "dragObjectClone";
 	document.body.appendChild(this.objectClone);
 	
-	if (this.dragScrollContainer) {
-		this.dragScrollContainer.onDragStart();
+	if (this.scrollManager) {
+		this.scrollManager.onDragStart();
 	}
 
 	this.mouseOffset = offset;
@@ -52,8 +48,8 @@ tabaga.DragObject.prototype.onDragMove = function(x, y) {
 	this.objectClone.style.top = y - this.mouseOffset.y + 'px';
 	this.objectClone.style.left = x - this.mouseOffset.x + 'px';
 
-	if (this.dragScrollContainer) {
-		this.dragScrollContainer.onDragMove(x, y);
+	if (this.scrollManager) {
+		this.scrollManager.onDragMove(x, y);
 	}
 
 	// container.scrollTop = container.scrollTop - (x - startX);
