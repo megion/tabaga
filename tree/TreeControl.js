@@ -57,11 +57,10 @@ tabaga.TreeControl.prototype.init = function(rootNodes) {
  * Обработчик события выделения узла дерева
  */
 tabaga.TreeControl.prototype.onClickTreeNode = function(event) {
-	// IE
-	if ($.browser.msie) {
+	if (!event) {
+		// IE8
 		window.event.cancelBubble = true;
-	}
-	if (event.stopPropagation) {
+	} else if (event.stopPropagation) {
 		event.stopPropagation();
 	}
 	
@@ -283,6 +282,10 @@ tabaga.TreeControl.prototype.makeAllUnDraggable = function() {
 tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var newLi = document.createElement("li");
 	newLi.onclick = this.onClickTreeNode;
+	if (this.conf.onNodeContextMenu) {
+		newLi.oncontextmenu = this.conf.onNodeContextMenu;
+	}
+	
 	parentUl.appendChild(newLi);
 
 	var subnodes = newNode.children;
@@ -314,6 +317,8 @@ tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 		var ulContainer = newLi.subnodesUl;
 		this.appendNewNodes(ulContainer, subnodes);
 	}
+	
+	return newLi;
 
 };
 

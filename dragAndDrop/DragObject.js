@@ -57,6 +57,8 @@ tabaga.DragObject.prototype.onDragMove = function(x, y) {
 };
 
 tabaga.DragObject.prototype.onDragSuccess = function(dropTarget) {
+	document.body.removeChild(this.objectClone);
+	this.objectClone = null;
 };
 
 tabaga.DragObject.prototype.onDragFail = function() {
