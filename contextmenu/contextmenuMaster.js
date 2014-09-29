@@ -2,14 +2,10 @@
  * Объект управляющий pop-up menu
  */
 tabaga.contextmenuMaster = (function() {
-
-	/*
-	 * хранит информацию об всплывающем окне
-	 */
-	var lastContextMenu = null;
-	
+	var menuContainer = null;
 	
 	function onShowContextMenu(e) {
+		tabaga.stopEventPropagation(e);
 		e = tabaga.fixEvent(e);
 		//if (e.which != 3) {
 			//return;
@@ -28,50 +24,34 @@ tabaga.contextmenuMaster = (function() {
 	}
 	
 	function createContextMenu(mouseDownAt) {
-		lastContextMenu = document.createElement("div");
-		lastContextMenu.style.position = 'absolute';
-		lastContextMenu.className = "contextMenu";
+		closeContextMenu();
 		
-		lastContextMenu.style.top = y - mouseDownAt.y + 'px';
-		lastContextMenu.style.left = x - mouseDownAt.x + 'px';
+		menuContainer = document.createElement("div");
+		menuContainer.style.position = 'absolute';
+		menuContainer.className = "contextMenu";
 		
-		var contextMenu = mouseDownAt.element.contextMenu
-		contextMenu.onCreate(lastContextMenu);
-		document.body.appendChild(lastContextMenu);
+		menuContainer.style.top = mouseDownAt.y + 'px';
+		menuContainer.style.left = mouseDownAt.x + 'px';
+		
+		var cm = mouseDownAt.element.cm;
+		cm.onCreate(menuContainer);
+		document.body.appendChild(menuContainer);
 	}
 	
-	function closePopup(popup) {
-		popup.popupWindow.style.display = "none";
-		jQuery(popup.container).removeClass("opened-node");
-		popup.open = false;
-	}
-
-	function renderPopup(popup) {
-		if (lastPopup) {
-			if (lastPopup.container == popup.container && lastPopup.open) {
-				// закрыть и выйти
-				closePopup(lastPopup);
-				return;
-			}
-			
-			// просто закрыть
-			closePopup(lastPopup);
+	function closeContextMenu() {
+		if (!menuContainer) {
+			return;
 		}
 		
-		popup.popupWindow.style.display = "block";
-		jQuery(popup.container).addClass("opened-node");
-		popup.open = true;
+		document.body.removeChild(menuContainer);
+		menuContainer = false;
 	}
-	
 
 	function clickByDocument(event) {
-		if (lastPopup==null || !lastPopup.open) {
-	    	return;
+		if (event.which != 1) {
+			return;
 	    }
-		
-		closePopup(lastPopup);
-
-		// (3)
+		closeContextMenu();
 		removeDocumentEventHandlers();
 	}
 

@@ -1,9 +1,11 @@
-tabaga.ContextMenu = function(element) {
+tabaga.ContextMenu = function(element, menuHtmlBuilderFn) {
 	this.element = element;
-	this.element.contextMenu = this;
+	this.element.cm = this;
+	this.menuHtmlBuilderFn = menuHtmlBuilderFn;
 }
 
-tabaga.ContextMenu.prototype.onCreate = function(contextMenuContainer) {
+tabaga.ContextMenu.prototype.onCreate = function(container) {
+	this.menuHtmlBuilderFn(container);
 };
 
 tabaga.DragObject.prototype.onRemove = function() {
