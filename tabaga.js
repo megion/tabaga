@@ -69,6 +69,15 @@ tabaga.emptyFalseFn = function() {
 	return false;
 };
 
+tabaga.stopEventPropagation = function(event) {
+	if (!event) {
+		// IE8
+		window.event.cancelBubble = true;
+	} else if (event.stopPropagation) {
+		event.stopPropagation();
+	}
+};
+
 
 
 tabaga.widjets = [];

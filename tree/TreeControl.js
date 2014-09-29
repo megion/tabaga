@@ -15,6 +15,26 @@ tabaga.LINE_TREE_CLASSES = {
 	hitarea : "hitarea"
 };
 
+/**
+ * Обработчик события выделения узла дерева
+ */
+tabaga.onClickTreeControlNodeLi = function(event) {
+	tabaga.stopEventPropagation(event);
+	
+	var nodeLi = this; // т.к. событие на узле Li
+
+	var treeControl = nodeLi.treeControl;
+	var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+	nodeLi.opened = !setClosed;
+	var hash = treeControl.getNodeHash(this);
+	
+	var curAnchor = decodeURIComponent(location.hash.slice(1));
+	var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
+	jQuery.history.load(newAnchor);
+
+	return false;
+};
+
 
 /**
  * Класс элемента дерева
@@ -51,31 +71,6 @@ tabaga.TreeControl.prototype.configure = function(config) {
  */
 tabaga.TreeControl.prototype.init = function(rootNodes) {
 	this.appendNewNodes(this.treeUl, rootNodes);
-};
-
-/**
- * Обработчик события выделения узла дерева
- */
-tabaga.TreeControl.prototype.onClickTreeNode = function(event) {
-	if (!event) {
-		// IE8
-		window.event.cancelBubble = true;
-	} else if (event.stopPropagation) {
-		event.stopPropagation();
-	}
-	
-	var nodeLi = this; // т.к. событие на узле Li
-
-	var treeControl = nodeLi.treeControl;
-	var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
-	nodeLi.opened = !setClosed;
-	var hash = treeControl.getNodeHash(this);
-	
-	var curAnchor = decodeURIComponent(location.hash.slice(1));
-	var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
-	jQuery.history.load(newAnchor);
-
-	return false;
 };
 
 /**
@@ -281,10 +276,10 @@ tabaga.TreeControl.prototype.makeAllUnDraggable = function() {
  */
 tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var newLi = document.createElement("li");
-	newLi.onclick = this.onClickTreeNode;
-	if (this.conf.onNodeContextMenu) {
-		newLi.oncontextmenu = this.conf.onNodeContextMenu;
-	}
+	
+	// задаем onclick обработчик по умолчанию.
+	// При желании можно поменять перегрузив appendNewNode  
+	newLi.onclick = tabaga.onClickTreeControlNodeLi;
 	
 	parentUl.appendChild(newLi);
 
