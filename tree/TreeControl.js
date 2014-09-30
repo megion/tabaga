@@ -50,6 +50,7 @@ tabaga.TreeControl = function(id, treeUl) {
 	this.treeUl.treeControl = this;
 	this.currentSelectedTreeNodeSpan = null;
 	this.allNodesMap = {};
+	this.enableHistory = true;
 };
 
 /**
@@ -71,6 +72,23 @@ tabaga.TreeControl.prototype.configure = function(config) {
  */
 tabaga.TreeControl.prototype.init = function(rootNodes) {
 	this.appendNewNodes(this.treeUl, rootNodes);
+};
+
+tabaga.TreeControl.prototype.clickNode = function(nodeLi) {
+	if (enableHistory) {
+		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+		nodeLi.opened = !setClosed;
+		var hash = this.getNodeHash(nodeLi);
+		
+		var curAnchor = decodeURIComponent(location.hash.slice(1));
+		var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
+		jQuery.history.load(newAnchor);
+	} else {
+		//
+		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+		//nodeLi.opened = !setClosed;
+		this.selectTreeNode(nodeLi, true, setClosed);
+	}
 };
 
 /**
@@ -444,7 +462,7 @@ tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId, setClosed) {
  * @param nodeLiHtml
  */
 tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi,
-		saveHistory, enableLoading, setClosed) {
+		enableLoading, setClosed) {
 	
 	var CLASSES = tabaga.LINE_TREE_CLASSES;
 	
@@ -572,7 +590,7 @@ tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
 			mytree.setNodeOpen(parentNodeLi);
 		}
 	});
-	this.selectTreeNode(nodeLi, false, true, setClosed);
+	this.selectTreeNode(nodeLi, true, setClosed);
 };
 
 /**
