@@ -80,7 +80,7 @@ tabaga.stopEventPropagation = function(event) {
 
 
 
-tabaga.widjets = [];
+tabaga.historyControlsMap = {};
 
 /**
  * History call back. Load new content form server by AJAX.
@@ -88,10 +88,21 @@ tabaga.widjets = [];
  * @param anchor
  */
 tabaga.pageload = function (hash) {
-	for (var i = 0; i < tabaga.widjets.length; i++) {
-		tabaga.widjets[i].detectAnchor(hash);
+	for(var controlId in tabaga.historyControlsMap) {
+		var control = tabaga.historyControlsMap[controlId];
+		control.detectAnchor(hash);
 	}
 };
+
+tabaga.enableHistoryControl = function(control, enable) {
+	if (enable) {
+		tabaga.historyControlsMap[control.id] = control;
+		control.disableHistory = false;
+	} else {
+		delete tabaga.historyControlsMap[control.id];
+		control.disableHistory = true;
+	}
+}
 
 /**
  * Initialize and use browser history
@@ -120,7 +131,9 @@ $(document).ready(function() {
 		treeControl.configure(config);
 		treeControl.init(rootNodes);
 		
-		tabaga.widjets.push(treeControl);
+		if (!config.disableHistory) {
+			tabaga.historyControlsMap[id] = treeControl;
+		}
 		
 		return treeControl;
 	}

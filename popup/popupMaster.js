@@ -17,21 +17,20 @@ tabaga.popupMaster = (function() {
 			y : e.pageY,
 			element : this
 		};
-		addDocumentEventHandlers();
-		
-		createContextMenu(e);
-		
+	
+		createContextMenu();	
 		return false;
 	}
 	
-	function createContextMenu(e) {
+	function createContextMenu() {
+		// удалем старый контейнер с контекстным меню, если он уже был
 		if (contextMenuContainer) {
 			document.body.removeChild(contextMenuContainer);
 			contextMenuContainer = null;
 		}
 		
 		contextMenuContainer = document.createElement("div");
-		contextMenuContainer.style.position = 'absolute';
+		//contextMenuContainer.style.position = 'absolute';
 		contextMenuContainer.className = "contextMenuContainer";
 		
 		contextMenuContainer.style.top = mouseDownAt.y + 'px';
@@ -40,6 +39,8 @@ tabaga.popupMaster = (function() {
 		var popupmenu = mouseDownAt.element.popupMenu;
 		popupmenu.onCreate(contextMenuContainer);
 		document.body.appendChild(contextMenuContainer);
+		
+		addDocumentEventHandlers();
 	}
 	
 	function closeContextMenu() {
@@ -48,6 +49,7 @@ tabaga.popupMaster = (function() {
 		document.body.removeChild(contextMenuContainer);
 		mouseDownAt = null;
 		contextMenuContainer = null;
+		removeDocumentEventHandlers();
 	}
 
 	function clickByDocument(event) {
@@ -55,7 +57,7 @@ tabaga.popupMaster = (function() {
 			//return;
 	    //}
 		closeContextMenu();
-		removeDocumentEventHandlers();
+		
 	}
 
 	function addDocumentEventHandlers() {

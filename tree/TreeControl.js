@@ -18,19 +18,14 @@ tabaga.LINE_TREE_CLASSES = {
 /**
  * Обработчик события выделения узла дерева
  */
-tabaga.onClickTreeControlNodeLi = function(event) {
+tabaga.onClickTreeNode = function(event) {
 	tabaga.stopEventPropagation(event);
 	
 	var nodeLi = this; // т.к. событие на узле Li
 
 	var treeControl = nodeLi.treeControl;
-	var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
-	nodeLi.opened = !setClosed;
-	var hash = treeControl.getNodeHash(this);
 	
-	var curAnchor = decodeURIComponent(location.hash.slice(1));
-	var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
-	jQuery.history.load(newAnchor);
+	treeControl.clickNode(nodeLi);
 
 	return false;
 };
@@ -50,7 +45,6 @@ tabaga.TreeControl = function(id, treeUl) {
 	this.treeUl.treeControl = this;
 	this.currentSelectedTreeNodeSpan = null;
 	this.allNodesMap = {};
-	this.enableHistory = true;
 };
 
 /**
@@ -58,13 +52,7 @@ tabaga.TreeControl = function(id, treeUl) {
  */
 tabaga.TreeControl.prototype.configure = function(config) {
 	this.conf = config || {};
-	this.enableDragAndDrop = this.conf.dragAndDrop?true:false;
-	if (this.enableDragAndDrop) {
-		this.dragAndDropConfig = this.conf.dragAndDrop;
-		this.dragAndDropConfig.DragObjectConstructor = this.dragAndDropConfig.DragObjectConstructor || tabaga.DragObject;
-		this.dragAndDropConfig.DropTargetConstructor = this.dragAndDropConfig.DropTargetConstructor || tabaga.DropTarget;
-		this.dragAndDropConfig.DragScrollManagerConstructor = this.dragAndDropConfig.DragScrollManagerConstructor || tabaga.DragScrollManager;
-	}
+	this.disableHistory = this.conf.disableHistory;
 }
 
 /**
@@ -75,19 +63,20 @@ tabaga.TreeControl.prototype.init = function(rootNodes) {
 };
 
 tabaga.TreeControl.prototype.clickNode = function(nodeLi) {
-	if (enableHistory) {
+	if (this.disableHistory) {
+		//
+		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+		//nodeLi.opened = !setClosed;
+		this.selectTreeNode(nodeLi, true, setClosed);
+	} else {
 		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
 		nodeLi.opened = !setClosed;
 		var hash = this.getNodeHash(nodeLi);
 		
 		var curAnchor = decodeURIComponent(location.hash.slice(1));
-		var newAnchor = tabaga.historyMaster.putValue(treeControl.id, hash, curAnchor);
+		var newAnchor = tabaga.historyMaster.putValue(this.id, hash, curAnchor);
 		jQuery.history.load(newAnchor);
-	} else {
-		//
-		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
-		//nodeLi.opened = !setClosed;
-		this.selectTreeNode(nodeLi, true, setClosed);
+		// выделение узла в данном случае осуществляет callback history 
 	}
 };
 
@@ -249,35 +238,11 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
 	}
 };
 
-/**
- * Установка для элемента узла span возможности перемещения под выбранный узел
- */
-tabaga.TreeControl.prototype.setDragAndDropChildNode = function(nodeLi) {
-	var dragObject = new this.dragAndDropConfig.DragObjectConstructor(nodeLi.nodeSpan);
-	
-	new this.dragAndDropConfig.DropTargetConstructor(nodeLi.nodeSpan);
-	
-	if (this.dragAndDropConfig.scrollContainer) {
-		dragObject.setScrollManager(new this.dragAndDropConfig.DragScrollManagerConstructor(
-				this.dragAndDropConfig.scrollContainer));
-	}
-	tabaga.TreeControl.prototype.makeDraggable(nodeLi);
-	
-};
-
-tabaga.TreeControl.prototype.makeDraggable = function(nodeLi) {
-	tabaga.dragMaster.makeDraggable(nodeLi.nodeSpan);
-};
-
-tabaga.TreeControl.prototype.makeUnDraggable = function(nodeLi) {
-	tabaga.dragMaster.makeUnDraggable(nodeLi.nodeSpan);
-};
-
-tabaga.TreeControl.prototype.makeAllDraggable = function() {
+tabaga.TreeControl.prototype.processAllNodes = function(processorFn) {
 	for(var nodeId in this.allNodesMap) {
 		var nodeModel = this.allNodesMap[nodeId];
 		var nodeLi = nodeModel.nodeLi;
-		tabaga.TreeControl.prototype.makeDraggable(nodeLi);
+		processorFn.call(this, nodeLi);
 	}
 };
 
@@ -297,7 +262,7 @@ tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	
 	// задаем onclick обработчик по умолчанию.
 	// При желании можно поменять перегрузив appendNewNode  
-	newLi.onclick = tabaga.onClickTreeControlNodeLi;
+	newLi.onclick = tabaga.onClickTreeNode;
 	
 	parentUl.appendChild(newLi);
 
@@ -311,10 +276,6 @@ tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	newLi.appendChild(nodeSpan);
 	newLi.nodeSpan = nodeSpan;
 	newLi.treeControl = this;
-
-	if (this.enableDragAndDrop) {
-		this.setDragAndDropChildNode(newLi);
-	}
 
 	// Внимание!!! создание перекрестной ссылки. 1 - необходимо например при
 	// получении модели узла в событиях. 2 - вторая ссылка используется при
