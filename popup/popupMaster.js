@@ -4,13 +4,11 @@
 tabaga.popupMaster = (function() {
 	var contextMenuContainer = null;
 	var mouseDownAt = null;
+	var hasover = false;
 	
 	function contextMenu(e) {
 		tabaga.stopEventPropagation(e);
 		e = tabaga.fixEvent(e);
-		//if (e.which != 3) {
-			//return;
-		//}
 
 		mouseDownAt = {
 			x : e.pageX,
@@ -23,49 +21,67 @@ tabaga.popupMaster = (function() {
 	}
 	
 	function createContextMenu() {
+		var popupmenu = mouseDownAt.element.popupMenu;
+		
 		// удалем старый контейнер с контекстным меню, если он уже был
 		if (contextMenuContainer) {
-			document.body.removeChild(contextMenuContainer);
+			if (popupmenu.appendToElement) {
+				contextMenuContainer.parentNode.removeChild(contextMenuContainer);
+			} else {
+				document.body.removeChild(contextMenuContainer);
+			}
 			contextMenuContainer = null;
 		}
 		
 		contextMenuContainer = document.createElement("div");
-		//contextMenuContainer.style.position = 'absolute';
 		contextMenuContainer.className = "contextMenuContainer";
 		
 		contextMenuContainer.style.top = mouseDownAt.y + 'px';
 		contextMenuContainer.style.left = mouseDownAt.x + 'px';
 		
-		var popupmenu = mouseDownAt.element.popupMenu;
-		popupmenu.onCreate(contextMenuContainer);
-		document.body.appendChild(contextMenuContainer);
+		contextMenuContainer.oncontextmenu = tabaga.emptyFalseFn;
+		contextMenuContainer.onmouseout = mouseoutContextMenuContainer;
+		contextMenuContainer.onmouseover = mouseoverContextMenuContainer;
 		
-		addDocumentEventHandlers();
+		popupmenu.onCreate(contextMenuContainer);
+		if (popupmenu.appendToElement) {
+			popupmenu.appendToElement.appendChild(contextMenuContainer);
+		} else {
+			document.body.appendChild(contextMenuContainer);
+		}
 	}
 	
 	function closeContextMenu() {
 		var popupmenu = mouseDownAt.element.popupMenu;
 		popupmenu.onRemove(contextMenuContainer);
-		document.body.removeChild(contextMenuContainer);
+		if (popupmenu.appendToElement) {
+			contextMenuContainer.parentNode.removeChild(contextMenuContainer);
+		} else {
+			document.body.removeChild(contextMenuContainer);
+		}
 		mouseDownAt = null;
 		contextMenuContainer = null;
-		removeDocumentEventHandlers();
+	    hasover = false;
 	}
 
 	function clickByDocument(event) {
-		//if (event.which != 1) {
-			//return;
-	    //}
+		if (event.which != 1) {
+			return;
+	    }
 		closeContextMenu();
-		
 	}
-
-	function addDocumentEventHandlers() {
-		document.onclick = clickByDocument;
-		document.ondragstart = document.body.onselectstart = tabaga.emptyFalseFn;
+	
+	function mouseoutContextMenuContainer(event) {
+		setTimeout(function() {
+			if (!hasover) {
+				closeContextMenu();
+			}
+		}, 2000 );
+		hasover = false;
 	}
-	function removeDocumentEventHandlers() {
-		document.onclick = document.ondragstart = document.body.onselectstart = null;
+	
+	function mouseoverContextMenuContainer(event) {
+		hasover = true;
 	}
 
 	return {

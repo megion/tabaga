@@ -1,6 +1,7 @@
-tabaga.PopupMenu = function(element) {
+tabaga.PopupMenu = function(element, appendToElement) {
 	this.element = element;
 	this.element.popupMenu = this;
+	this.appendToElement = appendToElement;
 }
 
 tabaga.PopupMenu.prototype.onCreate = function(container) {
