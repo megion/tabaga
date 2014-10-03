@@ -67,7 +67,7 @@ tabaga.TreeControl.prototype.clickNode = function(nodeLi) {
 		//
 		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
 		//nodeLi.opened = !setClosed;
-		this.selectTreeNode(nodeLi, true, setClosed);
+		this.selectTreeNode(nodeLi, setClosed);
 	} else {
 		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
 		nodeLi.opened = !setClosed;
@@ -418,35 +418,36 @@ tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId, setClosed) {
 };
 
 /**
+ * Установить видимость выделения узла
+ */
+tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeLi) {
+	var CLASSES = tabaga.LINE_TREE_CLASSES;
+
+	// снять предыдущий выделенный
+	if (this.currentSelectedTreeNodeSpan) {
+		this.currentSelectedTreeNodeSpan.className = CLASSES.treeNode;
+	}
+	var nodeSpan = nodeLi.nodeSpan;
+	nodeSpan.className = CLASSES.treeNode + " " + CLASSES.selectedNode;
+	this.currentSelectedTreeNodeSpan = nodeSpan;
+}
+
+/**
  * Выделение узла дерева
  * 
  * @param nodeLiHtml
  */
-tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi,
-		enableLoading, setClosed) {
-	
-	var CLASSES = tabaga.LINE_TREE_CLASSES;
-	
-	// снять предыдущий выделенный 
-	if (this.currentSelectedTreeNodeSpan) {
-		this.currentSelectedTreeNodeSpan.setAttribute("class", CLASSES.treeNode);
-	}
-	
+tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi, setClosed) {
+	this.setSelectionTreeNode(nodeLi);
 	if (setClosed) {
 		this.setNodeClose(nodeLi);
 	} else {
 		this.setNodeOpen(nodeLi);
 	}
 	
-	var nodeSpan = nodeLi.nodeSpan;
-	nodeSpan.setAttribute("class", CLASSES.treeNode + " " + CLASSES.selectedNode);
-	this.currentSelectedTreeNodeSpan = nodeSpan;
-
 	var requireLoading = nodeLi.nodeModel.needLoad;
 	if (requireLoading) {
-		if (enableLoading) {
-			this.feedChildNodes(nodeLi);
-		}
+		this.feedChildNodes(nodeLi);
 	}
 };
 
@@ -551,7 +552,7 @@ tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
 			mytree.setNodeOpen(parentNodeLi);
 		}
 	});
-	this.selectTreeNode(nodeLi, true, setClosed);
+	this.selectTreeNode(nodeLi, setClosed);
 };
 
 /**
