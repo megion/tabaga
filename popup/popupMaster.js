@@ -40,8 +40,8 @@ tabaga.popupMaster = (function() {
 		contextMenuContainer.style.left = mouseDownAt.x + 'px';
 		
 		contextMenuContainer.oncontextmenu = tabaga.emptyFalseFn;
-		contextMenuContainer.onmouseout = mouseoutContextMenuContainer;
-		contextMenuContainer.onmouseover = mouseoverContextMenuContainer;
+		contextMenuContainer.onmouseleave = mouseoutContextMenuContainer;
+		contextMenuContainer.onmouseenter = mouseoverContextMenuContainer;
 		
 		popupmenu.onCreate(contextMenuContainer);
 		if (popupmenu.appendToElement) {
@@ -52,6 +52,9 @@ tabaga.popupMaster = (function() {
 	}
 	
 	function closeContextMenu() {
+		if (!mouseDownAt) {
+			return;
+		}
 		var popupmenu = mouseDownAt.element.popupMenu;
 		popupmenu.onRemove(contextMenuContainer);
 		if (popupmenu.appendToElement) {
@@ -72,6 +75,7 @@ tabaga.popupMaster = (function() {
 	}
 	
 	function mouseoutContextMenuContainer(event) {
+		//var self = this;
 		setTimeout(function() {
 			if (!hasover) {
 				closeContextMenu();
@@ -87,6 +91,9 @@ tabaga.popupMaster = (function() {
 	return {
 		makeContextable : function(element) {
 			element.oncontextmenu = contextMenu;
+		},
+		closeContext : function() {
+			closeContextMenu();
 		}
 	};
 }());

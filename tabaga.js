@@ -30,6 +30,22 @@ tabaga.fixEvent = function(e) {
 	return e;
 };
 
+tabaga.fireEvent = function(el, etype) {
+	if (el.fireEvent) {
+		el.fireEvent('on' + etype);
+	} else {
+		var evObj = document.createEvent('MouseEvents');
+		evObj.initEvent(etype, true, false);
+		var canceled = !el.dispatchEvent(evObj);
+		if (canceled) {
+			// A handler called preventDefault.
+			console.log("automatic click canceled");
+		} else {
+			// None of the handlers called preventDefault.
+		}
+	}
+};
+
 tabaga.getOffsetRect = function(elem) {
     var box = elem.getBoundingClientRect();
  

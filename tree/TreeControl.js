@@ -36,8 +36,6 @@ tabaga.onClickTreeNode = function(event) {
  * 
  * @param treeId -
  *            ID дерева
- * @param feedChildNodesUrl -
- *            относительный URL сервера для обновления ветки дерева
  */
 tabaga.TreeControl = function(id, treeUl) {
 	this.id = id;
@@ -246,14 +244,6 @@ tabaga.TreeControl.prototype.processAllNodes = function(processorFn) {
 	}
 };
 
-tabaga.TreeControl.prototype.makeAllUnDraggable = function() {
-	for(var nodeId in this.allNodesMap) {
-		var nodeModel = this.allNodesMap[nodeId];
-		var nodeLi = nodeModel.nodeLi;
-		tabaga.TreeControl.prototype.makeUnDraggable(nodeLi);
-	}
-};
-
 /**
  * Добавить новый узел
  */
@@ -359,62 +349,23 @@ tabaga.TreeControl.prototype.updateVisualNodeLi = function(nodeLi, newNode) {
 };
 
 /**
- * Обработчик успешной загрузки данных для операции feed child nodes
- */
-tabaga.TreeControl.prototype.onLoadChildNodes = function(nodeLi, loadedData) {
-	this.updateExistNode(nodeLi, loadedData);
-}
-
-/**
  * Загружает данные модели с сервера в виде JSON
  * 
  * @param nodeLiHtml -
  *            обновляемый узел
  */
-tabaga.TreeControl.prototype.feedChildNodes = function(nodeLi) {
-	if (!config.loadChildNodes) {
-		console.error("Function loadChildNodes is not configured");
-		return;
-	}
-	
-	var self = this;
-	var nodeId = nodeLi.nodeModel.id;
-	config.loadChildNodes(nodeId, self, function(nodeId, loadedData) {
-		self.onLoadChildNodes(nodeLi, loadedData);
-	});
+tabaga.TreeControl.prototype.loadChildNodes = function(nodeLi) {
+	console.error("Function loadChildNodes should be overriden");
 };
 
 /**
- * Обработчик успешной загрузки данных для операции feed tree scope
- * @param nodeId
- * @param setClosed
- * @param loadedData
- */
-tabaga.TreeControl.prototype.onLoadTreeScopeNodes = function(nodeId, setClosed, loadedData) {
-	this.updateExistUlNodesContainer(this.treeUl,
-			loadedData);
-	// find Li by node Id. Before update nodeModel may be null.
-	var nodeModel = this.allNodesMap[nodeId];
-	var nodeLi = nodeModel.nodeLi
-	
-	this.openNode(nodeLi, setClosed);
-}
-
-/**
  * Загружает данные модели с сервера в виде JSON
  * 
  * @param nodeLiHtml -
  *            обновляемый узел
  */
-tabaga.TreeControl.prototype.feedTreeScopeNodes = function(nodeId, setClosed) {
-	if (!config.loadTreeScopeNodes) {
-		console.error("Function loadTreeScopeNodes is not configured");
-		return;
-	}
-	var self = this;
-	config.loadTreeScopeNodes(nodeId, setClosed, self, function(nodeId, setClosed, loadedData) {
-		self.onLoadTreeScopeNodes(nodeId, setClosed, loadedData);
-	});
+tabaga.TreeControl.prototype.loadTreeScopeNodes = function(nodeId, setClosed) {
+	console.error("Function loadTreeScopeNodes should be overriden");
 };
 
 /**
@@ -447,7 +398,7 @@ tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi, setClosed) {
 	
 	var requireLoading = nodeLi.nodeModel.needLoad;
 	if (requireLoading) {
-		this.feedChildNodes(nodeLi);
+		this.loadChildNodes(nodeLi);
 	}
 };
 
@@ -599,7 +550,7 @@ tabaga.TreeControl.prototype.detectAnchor = function(anchor) {
 		if (nodeModel && !nodeModel.fakeNode) {
 			this.openNode(nodeModel.nodeLi, nodeInfo.setClosed);
 		} else {
-			this.feedTreeScopeNodes(nodeInfo.nodeId, nodeInfo.setClosed);
+			this.loadTreeScopeNodes(nodeInfo.nodeId, nodeInfo.setClosed);
 		}
 	}
 };

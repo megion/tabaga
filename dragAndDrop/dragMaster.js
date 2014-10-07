@@ -1,22 +1,5 @@
 /**
- * Критика:
- * 
- * Все это очень замечательно, но для действительно полноценного drag'n'drop'а
- * следует рассмотреть еще много-много интересного. Итак:
- * 
- * 1. Вы совершенно не учитываете возможность наличия других обработчиков
- * mousemove/mouseup, которые могут сделать stopPropagation/cancelBubble, и Ваш
- * drag'n'drop никогда не кончится. Во избежание этой ситуации обработчики
- * mousemove/mouseup следует навешивать С КАПЧУРИНГОМ на document:
- * document.addEventListener('mousemove', callback, true). В IE для тех же целей
- * необходимо установить setCapture на таскаемый элемент.
  *
- * 
- * Поэтому для того чтобы, D&D корректно прекращался, а не продолжался после
- * того как кнопка была отпущена "за пределами", необходимо ловить
- * document.[body.]onmouseover и прекращать его если не нажать левая кнопка
- * мыши. Кстати у вас в примерах такой эффект присутствует. D&D продолжается
- * если отжать мышь за пределами ограничивающего контейнера.
  */
 tabaga.dragMaster = (function() {
 	var dragObject = null;
@@ -31,9 +14,9 @@ tabaga.dragMaster = (function() {
 
 	function mouseDown(e) {
 		e = tabaga.fixEvent(e);
-		if (e.which != 1) {
-			return;
-		}
+		//if (e.which != 1) {
+		//	return;
+		//}
 
 		mouseDownAt = {
 			x : e.pageX,
@@ -51,6 +34,7 @@ tabaga.dragMaster = (function() {
 
 	function mouseMove(e) {
 		e = tabaga.fixEvent(e);
+		console.log("move: " + e);
 
 		// (1)
 		if (mouseDownAt) {
