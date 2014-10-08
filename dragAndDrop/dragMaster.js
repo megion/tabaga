@@ -1,5 +1,5 @@
 /**
- *
+ * 
  */
 tabaga.dragMaster = (function() {
 	var dragObject = null;
@@ -12,23 +12,43 @@ tabaga.dragMaster = (function() {
 	var currentDropTarget = null;
 	var bodyCursorStyle = null;
 
-	function mouseDown(e) {
-		e = tabaga.fixEvent(e);
-		//if (e.which != 1) {
-		//	return;
-		//}
-
+	function initDrag(x, y, el) {
 		mouseDownAt = {
-			x : e.pageX,
-			y : e.pageY,
-			element : this
+			x : x,
+			y : y,
+			element : el
 		};
 		addDocumentEventHandlers();
-		
+
 		// save cursor style
 		bodyCursorStyle = document.body.style.cursor;
 		document.body.style.cursor = "pointer";
+	}
+	
+	function moveDrag(x, y) {
 		
+
+		// Начать перенос
+		var elem = mouseDownAt.element;
+		// текущий объект для переноса
+		dragObject = elem.dragObject;
+
+		// запомнить, с каких относительных координат начался перенос
+		var mouseOffset = {x: 0, y: 0};//getMouseOffset(elem, 0, 0);
+		//mouseDownAt = null; // запомненное значение больше не нужно, сдвиг
+		// уже вычислен
+
+		dragObject.onDragStart(mouseOffset); // начали
+	}
+
+	function mouseDown(e) {
+		e = tabaga.fixEvent(e);
+		if (e.which != 1) {
+			return;
+		}
+
+		initDrag(e.pageX, e.pageY, this);
+
 		return false;
 	}
 
@@ -42,6 +62,7 @@ tabaga.dragMaster = (function() {
 					&& Math.abs(mouseDownAt.y - e.pageY) < 5) {
 				return false;
 			}
+
 			// Начать перенос
 			var elem = mouseDownAt.element;
 			// текущий объект для переноса
@@ -97,7 +118,7 @@ tabaga.dragMaster = (function() {
 
 		// (3)
 		removeDocumentEventHandlers();
-		
+
 		// (4) восстанавливаем стиль курсора
 		document.body.style.cursor = bodyCursorStyle;
 	}
@@ -155,7 +176,12 @@ tabaga.dragMaster = (function() {
 		},
 		makeUnDraggable : function(element) {
 			element.onmousedown = null;
+		},
+		emulateDragStart : function(x, y, element) {
+			initDrag(x, y, element);
+			//moveDrag(x, y);
+			//movingDragObject(x, y, false);
 		}
-	
+
 	};
 }());
