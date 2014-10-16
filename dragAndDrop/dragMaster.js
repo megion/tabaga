@@ -24,22 +24,6 @@ tabaga.dragMaster = (function() {
 		bodyCursorStyle = document.body.style.cursor;
 		document.body.style.cursor = "pointer";
 	}
-	
-	function moveDrag(x, y) {
-		
-
-		// Начать перенос
-		var elem = mouseDownAt.element;
-		// текущий объект для переноса
-		dragObject = elem.dragObject;
-
-		// запомнить, с каких относительных координат начался перенос
-		var mouseOffset = {x: 0, y: 0};//getMouseOffset(elem, 0, 0);
-		//mouseDownAt = null; // запомненное значение больше не нужно, сдвиг
-		// уже вычислен
-
-		dragObject.onDragStart(mouseOffset); // начали
-	}
 
 	function mouseDown(e) {
 		e = tabaga.fixEvent(e);
@@ -52,35 +36,31 @@ tabaga.dragMaster = (function() {
 		return false;
 	}
 	
-	function mouseMove2(e) {
+	function mouseMoveEmulate(e) {
 		e = tabaga.fixEvent(e);
-		console.log("move: " + e);
 
-		// (1)
 		if (mouseDownAt) {
-			//if (Math.abs(mouseDownAt.x - e.pageX) < 5
-					//&& Math.abs(mouseDownAt.y - e.pageY) < 5) {
-				//return false;
-			//}
-
 			// Начать перенос
 			var elem = mouseDownAt.element;
 			// текущий объект для переноса
 			dragObject = elem.dragObject;
 
-			// запомнить, с каких относительных координат начался перенос
-			//var mouseOffset = getMouseOffset(elem, mouseDownAt.x, mouseDownAt.y);
+			dragObject.onDragStart({x: mouseDownAt.x, y: mouseDownAt.y}); // начали
+			
 			mouseDownAt = null; // запомненное значение больше не нужно, сдвиг
 			// уже вычислен
-
-			dragObject.onDragStart({x: 0, y: 15}); // начали
 		}
 
+		moving(e);
+		return false;
+	}
+	
+	function moving(fixedEvent) {
 		// (2)
-		dragObject.onDragMove(e.pageX, e.pageY);
+		dragObject.onDragMove(fixedEvent.pageX, fixedEvent.pageY);
 
 		// (3)
-		var newTarget = getCurrentTarget(e);
+		var newTarget = getCurrentTarget(fixedEvent);
 
 		// (4)
 		if (currentDropTarget != newTarget) {
@@ -95,23 +75,18 @@ tabaga.dragMaster = (function() {
 
 		// (5) перемещение над акцептором
 		if (currentDropTarget) {
-			currentDropTarget.onMove(e.pageX, e.pageY);
+			currentDropTarget.onMove(fixedEvent.pageX, fixedEvent.pageY);
 		}
-
-		// (6)
-		return false;
 	}
 
 	function mouseMove(e) {
 		e = tabaga.fixEvent(e);
-		console.log("move: " + e);
 
-		// (1)
 		if (mouseDownAt) {
-			//if (Math.abs(mouseDownAt.x - e.pageX) < 5
-					//&& Math.abs(mouseDownAt.y - e.pageY) < 5) {
-				//return false;
-			//}
+			if (Math.abs(mouseDownAt.x - e.pageX) < 5
+					&& Math.abs(mouseDownAt.y - e.pageY) < 5) {
+				return false;
+			}
 
 			// Начать перенос
 			var elem = mouseDownAt.element;
@@ -125,30 +100,8 @@ tabaga.dragMaster = (function() {
 
 			dragObject.onDragStart(mouseOffset); // начали
 		}
-
-		// (2)
-		dragObject.onDragMove(e.pageX, e.pageY);
-
-		// (3)
-		var newTarget = getCurrentTarget(e);
-
-		// (4)
-		if (currentDropTarget != newTarget) {
-			if (currentDropTarget) {
-				currentDropTarget.onLeave();
-			}
-			if (newTarget) {
-				newTarget.onEnter();
-			}
-			currentDropTarget = newTarget;
-		}
-
-		// (5) перемещение над акцептором
-		if (currentDropTarget) {
-			currentDropTarget.onMove(e.pageX, e.pageY);
-		}
-
-		// (6)
+		
+		moving(e);
 		return false;
 	}
 
@@ -227,12 +180,9 @@ tabaga.dragMaster = (function() {
 		makeUnDraggable : function(element) {
 			element.onmousedown = null;
 		},
-		emulateDragStart : function(x, y, element) {
-			initDrag(x, y, element);
-			document.onmousemove = mouseMove2;
-			//moveDrag(x, y);
-			//movingDragObject(x, y, false);
+		emulateDragStart : function(element, offset) {
+			initDrag(offset.x, offset.y, element);
+			document.onmousemove = mouseMoveEmulate;
 		}
-
 	};
 }());
