@@ -105,7 +105,7 @@ tabaga.dragMaster = (function() {
 		return false;
 	}
 
-	function mouseUp() {
+	function mouseUp(e) {
 		if (!dragObject) { // (1)
 			mouseDownAt = null;
 		} else {

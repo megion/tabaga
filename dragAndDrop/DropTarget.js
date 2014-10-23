@@ -47,20 +47,42 @@ tabaga.DropTarget.prototype.accept = function(dragObject) {
 };
 
 tabaga.DropTarget.prototype.onLeave = function() {
-	this.element.className = this.rememberClassName;
+	console.log("onLeave " + this.element.innerHTML + ", class: "  + this.element.getAttribute("class"));
+	if (this.rememberClassName) {
+		this.element.className = this.rememberClassName;
+	}
+	//this.updateClassName('');
+	//$(this.element).removeClass("enterTarget enterCenterTarget enterOverTarget enterUnderTarget");
+	this.rememberClassName = null;
+	//console.log("set rememberClassName to null: " + this.rememberClassName + " "  + this.element.innerHtml);
 	this.state = null;
 };
 
 tabaga.DropTarget.prototype.onEnter = function() {
-	if (this.element.className) {
-		this.rememberClassName = this.element.className;
-		this.element.className = this.rememberClassName
-				+ ' enterTarget enterCenterTarget';
+	this.rememberClassName = null;
+	var className = this.element.getAttribute("class");
+	console.log("onEnter " + this.element.innerHTML + ", class: "  + className);
+	if (className) {
+		this.rememberClassName = className;
+		//console.log("set rememberClassName: " + this.rememberClassName + " "  + this.element.innerHTML);
+		//console.log("set rememberClassName2: " + this.element.getAttribute("class") + " "  + this.element.innerHTML);
 	}
+	this.updateClassName('enterTarget enterCenterTarget');
+	//$(this.element).addClass("enterTarget enterCenterTarget");
 
 	this.state = null;
 	this.position = tabaga.getOffset(this.element);
 };
+
+tabaga.DropTarget.prototype.updateClassName = function(className) {
+	if (this.rememberClassName) {
+		this.element.setAttribute("class", this.rememberClassName + " " + className);
+		//console.log("set class1: " + this.element.className + " "  + this.element.innerHTML);
+	} else {
+		this.element.setAttribute("class", className);
+		//console.log("set class2: " + this.element.className + " "  + this.element.innerHTML);
+	}
+}
 
 /**
  * Иногда, например, при смене позиции элемента в списке, объект переносится
@@ -85,16 +107,23 @@ tabaga.DropTarget.prototype.onMove = function(x, y) {
 
 		if (part >= 0 && part < 0.5) {
 			// элемент перемещается над объектом приемником
-			this.element.className = this.rememberClassName
-					+ ' enterTarget enterOverTarget';
+			//this.element.className = this.rememberClassName
+					//+ ' enterTarget enterOverTarget';
+			this.updateClassName('enterTarget enterOverTarget');
+			//$(this.element).addClass("enterTarget enterOverTarget");
+			
 			this.state = tabaga.DropTarget.OVER;
 		} else if (part>0.75) { 
-			this.element.className = this.rememberClassName + ' enterTarget enterUnderTarget';
+			//this.element.className = this.rememberClassName + ' enterTarget enterUnderTarget';
+			this.updateClassName('enterTarget enterUnderTarget');
+			//$(this.element).addClass("enterTarget enterUnderTarget");
 			this.state = tabaga.DropTarget.UNDER;
 		} else {
 			// перемещение в объект приемника
-			this.element.className = this.rememberClassName
-					+ ' enterTarget enterCenterTarget';
+			//this.element.className = this.rememberClassName
+					//+ ' enterTarget enterCenterTarget';
+			this.updateClassName('enterTarget enterCenterTarget');
+			//$(this.element).addClass("enterTarget enterCenterTarget");
 			this.state = tabaga.DropTarget.INTO;
 		}
 	}

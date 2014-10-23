@@ -94,6 +94,14 @@ tabaga.stopEventPropagation = function(event) {
 	}
 };
 
+/**
+ * Оптимизированная функция, аналог jQuery.addClass.
+ * Выполняется быстрее чем jQuery.addClass
+ */
+tabaga.addClass = function(element, className) {
+	
+};
+
 
 
 tabaga.historyControlsMap = {};

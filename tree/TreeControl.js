@@ -380,6 +380,7 @@ tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeLi) {
 	}
 	var nodeSpan = nodeLi.nodeSpan;
 	nodeSpan.className = CLASSES.treeNode + " " + CLASSES.selectedNode;
+	console.log("set selection: " + nodeSpan.className + " " + nodeSpan.innerHTML);
 	this.currentSelectedTreeNodeSpan = nodeSpan;
 }
 
