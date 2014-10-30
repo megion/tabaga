@@ -106,13 +106,12 @@ tabaga.stopEventPropagation = function(event) {
 	}
 };
 
-
+// add trim function support
 if (!String.prototype.trim) {
 	String.prototype.trim = function() {
 		return this.replace(/^\s+|\s+$/gm, '');
 	};
 }
-
 
 /**
  * Оптимизированная функция, аналог jQuery.addClass. Выполняется быстрее чем
@@ -133,13 +132,27 @@ tabaga.removeClass = function(el, value) {
 };
 
 tabaga.addClasses = function(el, values) {
+	var oldClass = ' ' + el.className + ' ', append = '';
+	for (var i = 0; i < values.length; i++) {
+		var clName = values[i];
+		if (oldClass.indexOf(' ' + clName + ' ') == -1) {
+			append += ' ' + clName;
+		}
+	}
+	if (append.length>0) {
+		el.className = el.className + append;
+	}
+};
+
+tabaga.removeClasses = function(el, values) {
 	var oldClass = ' ' + el.className + ' ';
-	for (var i = 0; i < className.length; i++) {
-        if (oldClass.indexOf(' ' + className[i] + ' ') == -1) {
-          append += ' ' + className[i];
-        }
-	if (oldClass.indexOf(' ' + className + ' ') == -1) {
-		node.className = node.className + ' ' + className;
+	for (var i = 0; i < values.length; i++) {
+		var clName = values[i];
+		oldClass = oldClass.replace(' ' + clName, '');
+	}
+	var newClass = oldClass.trim();
+	if (el.className != newClass) {
+		el.className = newClass;
 	}
 };
 
@@ -165,7 +178,7 @@ tabaga.enableHistoryControl = function(control, enable) {
 		delete tabaga.historyControlsMap[control.id];
 		control.disableHistory = true;
 	}
-}
+};
 
 /**
  * Initialize and use browser history
@@ -196,5 +209,4 @@ $(document).ready(function() {
 
 		return treeControl;
 	}
-
 })(jQuery);

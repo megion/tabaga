@@ -12,7 +12,7 @@ tabaga.DropTarget = function(element) {
 	element.dropTarget = this;
 	this.element = element;
 
-	this.rememberClassName = null;
+	//this.rememberClassName = null;
 	this.position = null;
 	this.state = null;
 };
@@ -23,6 +23,18 @@ tabaga.DropTarget = function(element) {
 tabaga.DropTarget.OVER = 1; // переместить над объектом
 tabaga.DropTarget.INTO = 2; // переместить в объект 
 tabaga.DropTarget.UNDER = 3; // переместить под объект
+
+/**
+ * Classes constants
+ */
+tabaga.DropTarget.ENTER_TARGET_CLASS = "enterTarget";
+tabaga.DropTarget.ENTER_CENTER_TARGET_CLASS = "enterCenterTarget";
+tabaga.DropTarget.ENTER_OVER_TARGET_CLASS = "enterOverTarget";
+tabaga.DropTarget.ENTER_UNDER_TARGET_CLASS = "enterUnderTarget";
+tabaga.DropTarget.ENTER_TARGET_ALL_CLASSES = [tabaga.DropTarget.ENTER_TARGET_CLASS,
+                                              tabaga.DropTarget.ENTER_CENTER_TARGET_CLASS,
+                                              tabaga.DropTarget.ENTER_OVER_TARGET_CLASS,
+                                              tabaga.DropTarget.ENTER_UNDER_TARGET_CLASS];
 
 /**
  * При проносе объекта над DropTarget, dragMaster спросит у акцептора, может ли
@@ -48,26 +60,29 @@ tabaga.DropTarget.prototype.accept = function(dragObject) {
 
 tabaga.DropTarget.prototype.onLeave = function() {
 	console.log("onLeave " + this.element.innerHTML + ", class: "  + this.element.getAttribute("class"));
-	if (this.rememberClassName) {
-		this.element.className = this.rememberClassName;
-	}
+	//if (this.rememberClassName) {
+	//	this.element.className = this.rememberClassName;
+	//}
+	tabaga.removeClasses(this.element, tabaga.DropTarget.ENTER_TARGET_ALL_CLASSES);
 	//this.updateClassName('');
 	//$(this.element).removeClass("enterTarget enterCenterTarget enterOverTarget enterUnderTarget");
-	this.rememberClassName = null;
+	//this.rememberClassName = null;
 	//console.log("set rememberClassName to null: " + this.rememberClassName + " "  + this.element.innerHtml);
 	this.state = null;
 };
 
 tabaga.DropTarget.prototype.onEnter = function() {
-	this.rememberClassName = null;
+	//this.rememberClassName = null;
 	var className = this.element.getAttribute("class");
 	console.log("onEnter " + this.element.innerHTML + ", class: "  + className);
-	if (className) {
-		this.rememberClassName = className;
+	//if (className) {
+		//this.rememberClassName = className;
 		//console.log("set rememberClassName: " + this.rememberClassName + " "  + this.element.innerHTML);
 		//console.log("set rememberClassName2: " + this.element.getAttribute("class") + " "  + this.element.innerHTML);
-	}
-	this.updateClassName('enterTarget enterCenterTarget');
+	//}
+	tabaga.addClasses(this.element, [tabaga.DropTarget.ENTER_TARGET_CLASS, tabaga.DropTarget.ENTER_CENTER_TARGET_CLASS]);
+	tabaga.removeClasses(this.element, [tabaga.DropTarget.ENTER_OVER_TARGET_CLASS, tabaga.DropTarget.ENTER_UNDER_TARGET_CLASS]);
+	//this.updateClassName('enterTarget enterCenterTarget');
 	//$(this.element).addClass("enterTarget enterCenterTarget");
 
 	this.state = null;
@@ -109,21 +124,27 @@ tabaga.DropTarget.prototype.onMove = function(x, y) {
 			// элемент перемещается над объектом приемником
 			//this.element.className = this.rememberClassName
 					//+ ' enterTarget enterOverTarget';
-			this.updateClassName('enterTarget enterOverTarget');
+			tabaga.addClass(this.element, tabaga.DropTarget.ENTER_OVER_TARGET_CLASS);
+			tabaga.removeClasses(this.element, [tabaga.DropTarget.ENTER_CENTER_TARGET_CLASS, tabaga.DropTarget.ENTER_UNDER_TARGET_CLASS]);
+			//this.updateClassName('enterTarget enterOverTarget');
 			//$(this.element).addClass("enterTarget enterOverTarget");
 			
 			this.state = tabaga.DropTarget.OVER;
 		} else if (part>0.75) { 
 			//this.element.className = this.rememberClassName + ' enterTarget enterUnderTarget';
-			this.updateClassName('enterTarget enterUnderTarget');
+			//this.updateClassName('enterTarget enterUnderTarget');
 			//$(this.element).addClass("enterTarget enterUnderTarget");
+			tabaga.addClass(this.element, tabaga.DropTarget.ENTER_UNDER_TARGET_CLASS);
+			tabaga.removeClasses(this.element, [tabaga.DropTarget.ENTER_CENTER_TARGET_CLASS, tabaga.DropTarget.ENTER_OVER_TARGET_CLASS]);
 			this.state = tabaga.DropTarget.UNDER;
 		} else {
 			// перемещение в объект приемника
 			//this.element.className = this.rememberClassName
 					//+ ' enterTarget enterCenterTarget';
-			this.updateClassName('enterTarget enterCenterTarget');
+			//this.updateClassName('enterTarget enterCenterTarget');
 			//$(this.element).addClass("enterTarget enterCenterTarget");
+			tabaga.addClass(this.element, tabaga.DropTarget.ENTER_CENTER_TARGET_CLASS);
+			tabaga.removeClasses(this.element, [tabaga.DropTarget.ENTER_UNDER_TARGET_CLASS, tabaga.DropTarget.ENTER_OVER_TARGET_CLASS]);
 			this.state = tabaga.DropTarget.INTO;
 		}
 	}
