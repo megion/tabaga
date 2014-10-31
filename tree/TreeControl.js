@@ -16,22 +16,6 @@ tabaga.LINE_TREE_CLASSES = {
 };
 
 /**
- * Обработчик события выделения узла дерева
- */
-tabaga.onClickTreeNode = function(event) {
-	tabaga.stopEventPropagation(event);
-	
-	var nodeLi = this; // т.к. событие на узле Li
-
-	var treeControl = nodeLi.treeControl;
-	
-	treeControl.clickNode(nodeLi);
-
-	return false;
-};
-
-
-/**
  * Класс элемента дерева
  * 
  * @param treeId -
@@ -43,6 +27,18 @@ tabaga.TreeControl = function(id, treeUl) {
 	this.treeUl.treeControl = this;
 	this.currentSelectedTreeNodeSpan = null;
 	this.allNodesMap = {};
+};
+
+/**
+ * Обработчик события выделения узла дерева. Функция объявлена как константа
+ */
+tabaga.TreeControl.onClickTreeNode = function(event) {
+	tabaga.stopEventPropagation(event);
+
+	var nodeLi = this; // т.к. событие на узле Li
+	var treeControl = nodeLi.treeControl;
+	treeControl.clickNode(nodeLi);
+	return false;
 };
 
 /**
@@ -252,7 +248,7 @@ tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	
 	// задаем onclick обработчик по умолчанию.
 	// При желании можно поменять перегрузив appendNewNode  
-	newLi.onclick = tabaga.onClickTreeNode;
+	newLi.onclick = tabaga.TreeControl.onClickTreeNode;
 	
 	parentUl.appendChild(newLi);
 
@@ -376,11 +372,10 @@ tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeLi) {
 
 	// снять предыдущий выделенный
 	if (this.currentSelectedTreeNodeSpan) {
-		this.currentSelectedTreeNodeSpan.className = CLASSES.treeNode;
+		tabaga.removeClass(this.currentSelectedTreeNodeSpan, CLASSES.selectedNode);
 	}
 	var nodeSpan = nodeLi.nodeSpan;
-	nodeSpan.className = CLASSES.treeNode + " " + CLASSES.selectedNode;
-	console.log("set selection: " + nodeSpan.className + " " + nodeSpan.innerHTML);
+	tabaga.addClass(nodeSpan, CLASSES.selectedNode);
 	this.currentSelectedTreeNodeSpan = nodeSpan;
 }
 
