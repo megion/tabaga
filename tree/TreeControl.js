@@ -56,14 +56,15 @@ tabaga.TreeControl.prototype.init = function(rootNodes) {
 	this.appendNewNodes(this.treeUl, rootNodes);
 };
 
-tabaga.TreeControl.prototype.clickNode = function(nodeLi) {
+tabaga.TreeControl.prototype.clickNode = function(nodeLi, setClosed) {
+	if (setClosed==undefined || setClosed==null) {
+		setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+	}
 	if (this.disableHistory) {
-		//
-		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
+		//	
 		//nodeLi.opened = !setClosed;
 		this.selectTreeNode(nodeLi, setClosed);
 	} else {
-		var setClosed = (nodeLi.opened==null?false:nodeLi.opened);
 		nodeLi.opened = !setClosed;
 		var hash = this.getNodeHash(nodeLi);
 		
@@ -235,6 +236,9 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
 tabaga.TreeControl.prototype.processAllNodes = function(processorFn) {
 	for(var nodeId in this.allNodesMap) {
 		var nodeModel = this.allNodesMap[nodeId];
+		if (!nodeModel) {
+			console.error("Node model not found for id : " + nodeId);
+		}
 		var nodeLi = nodeModel.nodeLi;
 		processorFn.call(this, nodeLi);
 	}

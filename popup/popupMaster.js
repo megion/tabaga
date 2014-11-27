@@ -9,6 +9,8 @@ tabaga.popupMaster = (function() {
 	function contextMenu(e) {
 		tabaga.stopEventPropagation(e);
 		e = tabaga.fixEvent(e);
+		
+		closeContextMenu();
 
 		mouseDownAt = {
 			x : e.pageX,
@@ -22,16 +24,6 @@ tabaga.popupMaster = (function() {
 	
 	function createContextMenu() {
 		var popupmenu = mouseDownAt.element.popupMenu;
-		
-		// удалем старый контейнер с контекстным меню, если он уже был
-		if (contextMenuContainer) {
-			if (popupmenu.appendToElement) {
-				contextMenuContainer.parentNode.removeChild(contextMenuContainer);
-			} else {
-				document.body.removeChild(contextMenuContainer);
-			}
-			contextMenuContainer = null;
-		}
 		
 		contextMenuContainer = document.createElement("div");
 		contextMenuContainer.className = "contextMenuContainer";
