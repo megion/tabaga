@@ -236,9 +236,6 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
 tabaga.TreeControl.prototype.processAllNodes = function(processorFn) {
 	for(var nodeId in this.allNodesMap) {
 		var nodeModel = this.allNodesMap[nodeId];
-		if (!nodeModel) {
-			console.error("Node model not found for id : " + nodeId);
-		}
 		var nodeLi = nodeModel.nodeLi;
 		processorFn.call(this, nodeLi);
 	}
@@ -325,7 +322,7 @@ tabaga.TreeControl.prototype.deleteExistSubNode = function(parentUl,
 	deletedLi.nodeSpan = null;
 	deletedLi.subnodesUl = null;
 	deletedLi.treeControl = null;
-	this.allNodesMap[deletedNode.id] = null;
+	delete this.allNodesMap[deletedNode.id];
 	parentUl.removeChild(deletedLi);
 };
 
