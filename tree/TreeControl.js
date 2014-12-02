@@ -1,21 +1,4 @@
 /**
- * Предопределенные CSS классы для дерева
- */
-tabaga.LINE_TREE_CLASSES = {
-	selectedNode : "selected",
-	treeNode : "menu",
-	closed : "closed",
-	closedHitarea : "closed-hitarea",
-	lastClosed : "lastClosed",
-	lastClosedHitarea : "lastClosed-hitarea",
-	opened : "opened",
-	openedHitarea : "opened-hitarea",
-	lastOpened : "lastOpened",
-	lastOpenedHitarea : "lastOpened-hitarea",
-	hitarea : "hitarea"
-};
-
-/**
  * Класс элемента дерева
  * 
  * @param treeId -
@@ -27,6 +10,23 @@ tabaga.TreeControl = function(id, treeUl) {
 	this.treeUl.treeControl = this;
 	this.currentSelectedTreeNodeSpan = null;
 	this.allNodesMap = {};
+};
+
+/**
+ * Static tree class name constants
+ */
+tabaga.TreeControl.TREE_CLASSES = {
+	selectedNode : "selected",
+	treeNode : "menu",
+	closed : "closed",
+	closedHitarea : "closed-hitarea",
+	lastClosed : "lastClosed",
+	lastClosedHitarea : "lastClosed-hitarea",
+	opened : "opened",
+	openedHitarea : "opened-hitarea",
+	lastOpened : "lastOpened",
+	lastOpenedHitarea : "lastOpened-hitarea",
+	hitarea : "hitarea"
 };
 
 /**
@@ -79,7 +79,7 @@ tabaga.TreeControl.prototype.clickNode = function(nodeLi, setClosed) {
  * Обновляет содержимое существующего контейнера узлов UL
  */
 tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
-		ulContainer, newNodes) {
+		ulContainer, newNodes, updateCloseState) {
 	var oldNodes = null;
 	if (ulContainer) { 
 		oldNodes = ulContainer.nodeModels;
@@ -143,7 +143,7 @@ tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
 				// необходимо перемещение
 				this.moveToEndExistSubNode(ulContainer, oldNode);
 			}
-			this.updateExistNode(oldNodeLi, newNode);
+			this.updateExistNode(oldNodeLi, newNode, updateCloseState);
 		} else {
 			// нет узла с таким ключом среди старых - необходимо добавить
 			this.appendNewNode(ulContainer, newNode, true, true);
@@ -154,7 +154,7 @@ tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
 /**
  * Обновляет узел и все дочерние узлы из новой модели узла
  */
-tabaga.TreeControl.prototype.updateExistNode = function(nodeLi, newNodeModel) {
+tabaga.TreeControl.prototype.updateExistNode = function(nodeLi, newNodeModel, updateCloseState) {
 	var oldNodeModel = nodeLi.nodeModel;
 	var oldSubnodes = oldNodeModel.children;
 	var newSubnodes = newNodeModel.children;
@@ -195,9 +195,16 @@ tabaga.TreeControl.prototype.updateExistNode = function(nodeLi, newNodeModel) {
 			return;
 		}
 	}
-
+	
+	if (updateCloseState) {
+		// close node if need loading
+		if (nodeLi.nodeModel.needLoad) {
+			this.setNodeClose(nodeLi, true);
+		}
+	}
+	
 	var ulContainer = nodeLi.subnodesUl;
-	this.updateExistUlNodesContainer(ulContainer, newSubnodes);
+	this.updateExistUlNodesContainer(ulContainer, newSubnodes, updateCloseState);
 };
 
 /**
@@ -206,16 +213,16 @@ tabaga.TreeControl.prototype.updateExistNode = function(nodeLi, newNodeModel) {
 tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
 	if (enable) {
 		if (nodeLi.subnodesUl) {
-			console.error("Ошибка вызова: узел имеет детей");
+			console.error("Error call: node have children");
 		} else {
 			var hitareaDiv = document.createElement("div");
-			hitareaDiv.setAttribute("class", tabaga.LINE_TREE_CLASSES.hitarea + " " +  tabaga.LINE_TREE_CLASSES.closedHitarea);
+			hitareaDiv.className = tabaga.TreeControl.TREE_CLASSES.hitarea + " " +  tabaga.TreeControl.TREE_CLASSES.closedHitarea;
 			nodeLi.insertBefore(hitareaDiv, nodeLi.nodeSpan);
 			nodeLi.hitareaDiv = hitareaDiv;
 			nodeLi.nodeModel.hasChildren = true;
 
 			var ulContainer = document.createElement("ul");
-			ulContainer.setAttribute("style", "display: none");
+			ulContainer.style.display = "none";
 			nodeLi.appendChild(ulContainer);
 			nodeLi.subnodesUl = ulContainer;
 		}
@@ -228,7 +235,7 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeLi, enable) {
 			nodeLi.hitareaDiv = null;
 			nodeLi.nodeModel.hasChildren = false;
 		} else {
-			console.error("Ошибка вызова: узел не имеет детей");
+			console.error("Error call: node have not children");
 		}
 	}
 };
@@ -238,6 +245,22 @@ tabaga.TreeControl.prototype.processAllNodes = function(processorFn) {
 		var nodeModel = this.allNodesMap[nodeId];
 		var nodeLi = nodeModel.nodeLi;
 		processorFn.call(this, nodeLi);
+	}
+};
+
+tabaga.TreeControl.prototype.processAllParentNode = function(nodeLi,
+		processNodeFn) {
+	var nodeUl = nodeLi.parentNode;
+	if (nodeUl.nodeName.toLowerCase() == "ul") {
+		if (nodeUl == this.treeUl) {
+			// конец дерева
+			return;
+		}
+		var parentNodeLi = nodeUl.parentNode;
+		if (parentNodeLi) {
+			this.processAllParentNode(parentNodeLi, processNodeFn);
+			processNodeFn.call(this, parentNodeLi);
+		}
 	}
 };
 
@@ -258,7 +281,7 @@ tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
 	var hasChildren = (subnodes != null && subnodes.length > 0);
 
 	var nodeSpan = document.createElement("span");
-	nodeSpan.setAttribute("class", tabaga.LINE_TREE_CLASSES.treeNode);
+	nodeSpan.className = tabaga.TreeControl.TREE_CLASSES.treeNode;
 	nodeSpan.innerHTML = newNode.title;
 	newLi.appendChild(nodeSpan);
 	newLi.nodeSpan = nodeSpan;
@@ -316,8 +339,6 @@ tabaga.TreeControl.prototype.deleteExistSubNode = function(parentUl,
 
 	deletedLi.nodeModel = null; // убрать перекрестную зависимость
 	deletedNode.nodeLi = null;
-	deletedLi.nodeSpan.dropTarget = null; // drag and drop
-	deletedLi.nodeSpan.dragObject = null; // drag and drop
 	deletedLi.hitareaDiv = null;
 	deletedLi.nodeSpan = null;
 	deletedLi.subnodesUl = null;
@@ -369,7 +390,7 @@ tabaga.TreeControl.prototype.loadTreeScopeNodes = function(nodeId, setClosed) {
  * Установить видимость выделения узла
  */
 tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeLi) {
-	var CLASSES = tabaga.LINE_TREE_CLASSES;
+	var CLASSES = tabaga.TreeControl.TREE_CLASSES;
 
 	// снять предыдущий выделенный
 	if (this.currentSelectedTreeNodeSpan) {
@@ -387,11 +408,7 @@ tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeLi) {
  */
 tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi, setClosed) {
 	this.setSelectionTreeNode(nodeLi);
-	if (setClosed) {
-		this.setNodeClose(nodeLi);
-	} else {
-		this.setNodeOpen(nodeLi);
-	}
+	this.setNodeClose(nodeLi, setClosed);
 	
 	var requireLoading = nodeLi.nodeModel.needLoad;
 	if (requireLoading) {
@@ -399,105 +416,76 @@ tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi, setClosed) {
 	}
 };
 
-tabaga.TreeControl.prototype.processAllParentNode = function(nodeLi,
-		processNode) {
-	var nodeUl = nodeLi.parentNode;
-	if (nodeUl.nodeName.toLowerCase() == "ul") {
-		if (nodeUl == this.treeUl) {
-			// конец дерева
-			return;
-		}
-		var parentNodeLi = nodeUl.parentNode;
-		if (parentNodeLi) {
-			this.processAllParentNode(parentNodeLi, processNode);
-			processNode.call(this, parentNodeLi);
-		}
-	}
-};
-
-tabaga.TreeControl.prototype.setNodeOpen = function(nodeLi) {
-	var CLASSES = tabaga.LINE_TREE_CLASSES;
+tabaga.TreeControl.prototype.setNodeClose = function(nodeLi, closed) {
+	//test
+	console.log("set node " + nodeLi.nodeModel.title + " closed " + closed);
+	
+	var CLASSES = tabaga.TreeControl.TREE_CLASSES;
 	var hasChildren = nodeLi.nodeModel.hasChildren;
 	
-	// mark node as opened
-	nodeLi.opened = true;
+	// mark node as closed or opened
+	nodeLi.opened = !closed;
 	
 	if (!hasChildren) {
 		return;
 	}
 
 	var isLast = nodeLi.nodeModel.isLast; 
-	var nLi = $(nodeLi);
 	if (isLast) {
-		nLi.removeClass(CLASSES.lastClosed);
-		nLi.addClass(CLASSES.lastOpened);
-	}
-
-	nLi.removeClass(CLASSES.closed);
-	nLi.addClass(CLASSES.opened);
-
-	for ( var x1 = 0; nodeLi.childNodes[x1]; x1++) {
-		var subChild = nodeLi.childNodes[x1];
-		if (subChild.nodeName.toLowerCase() == "div") {
-			var nDiv = $(subChild);
-			if (isLast) {
-				nDiv.removeClass(CLASSES.lastClosedHitarea);
-				nDiv.addClass(CLASSES.lastOpenedHitarea);
-			}
-			nDiv.removeClass(CLASSES.closedHitarea);
-			nDiv.addClass(CLASSES.openedHitarea);
-		} else if (subChild.nodeName.toLowerCase() == "span") {
-
-		} else if (subChild.nodeName.toLowerCase() == "ul") {
-			subChild.style.display = "block";
+		if (closed) {
+			tabaga.addClass(nodeLi, CLASSES.lastClosed);
+			tabaga.removeClass(nodeLi, CLASSES.lastOpened);
+		} else {
+			tabaga.addClass(nodeLi, CLASSES.lastOpened);
+			tabaga.removeClass(nodeLi, CLASSES.lastClosed);
 		}
 	}
-};
 
-tabaga.TreeControl.prototype.setNodeClose = function(nodeLi) {
-	var CLASSES = tabaga.LINE_TREE_CLASSES;
-	var hasChildren = nodeLi.nodeModel.hasChildren;
-	
-	// mark node as closed
-	nodeLi.opened = false;
-	
-	if (!hasChildren) {
-		return;
+	if (closed) {
+	    tabaga.addClass(nodeLi, CLASSES.closed);
+	    tabaga.removeClass(nodeLi, CLASSES.opened);
+	} else {
+		tabaga.addClass(nodeLi, CLASSES.opened);
+	    tabaga.removeClass(nodeLi, CLASSES.closed);
 	}
-
-	var isLast = nodeLi.nodeModel.isLast; 
-	var nLi = $(nodeLi);
-	if (isLast) {
-		nLi.addClass(CLASSES.lastClosed);
-		nLi.removeClass(CLASSES.lastOpened);
-	}
-
-	nLi.addClass(CLASSES.closed);
-	nLi.removeClass(CLASSES.opened);
 
 	for ( var x1 = 0; nodeLi.childNodes[x1]; x1++) {
 		var subChild = nodeLi.childNodes[x1];
 		if (subChild.nodeName.toLowerCase() == "div") {
-			var nDiv = $(subChild);
 			if (isLast) {
-				nDiv.addClass(CLASSES.lastClosedHitarea);
-				nDiv.removeClass(CLASSES.lastOpenedHitarea);
+				if (closed) {
+				    tabaga.addClass(subChild, CLASSES.lastClosedHitarea);
+				    tabaga.removeClass(subChild, CLASSES.lastOpenedHitarea);
+				} else {
+					tabaga.addClass(subChild, CLASSES.lastOpenedHitarea);
+				    tabaga.removeClass(subChild, CLASSES.lastClosedHitarea);
+				}
 			}
-			nDiv.addClass(CLASSES.closedHitarea);
-			nDiv.removeClass(CLASSES.openedHitarea);
+			if (closed) {
+				tabaga.addClass(subChild, CLASSES.closedHitarea);
+				tabaga.removeClass(subChild, CLASSES.openedHitarea);
+			} else {
+				tabaga.addClass(subChild, CLASSES.openedHitarea);
+				tabaga.removeClass(subChild, CLASSES.closedHitarea);
+			}
 		} else if (subChild.nodeName.toLowerCase() == "span") {
-
+            //
 		} else if (subChild.nodeName.toLowerCase() == "ul") {
-			subChild.style.display = "none";
+			if (closed) {
+				subChild.style.display = "none";	
+			} else {
+				subChild.style.display = "block";
+			}
 		}
 	}
 };
 
 tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
-	var mytree = this;
+	// open parent nodes
+	//var mytree = this;
 	this.processAllParentNode(nodeLi, function(parentNodeLi) {
 		if (!parentNodeLi.nodeModel.opened) {
-			mytree.setNodeOpen(parentNodeLi);
+			this.setNodeClose(parentNodeLi, false);
 		}
 	});
 	this.selectTreeNode(nodeLi, setClosed);
