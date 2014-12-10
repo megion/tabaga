@@ -61,8 +61,6 @@ tabaga.TreeControl.prototype.clickNode = function(nodeLi, setClosed) {
 		setClosed = (nodeLi.opened==null?false:nodeLi.opened);
 	}
 	if (this.disableHistory) {
-		//	
-		//nodeLi.opened = !setClosed;
 		this.selectTreeNode(nodeLi, setClosed);
 	} else {
 		nodeLi.opened = !setClosed;
@@ -382,7 +380,7 @@ tabaga.TreeControl.prototype.loadChildNodes = function(nodeLi) {
  * @param nodeLiHtml -
  *            обновляемый узел
  */
-tabaga.TreeControl.prototype.loadTreeScopeNodes = function(nodeId, setClosed) {
+tabaga.TreeControl.prototype.loadTreeScopeNodes = function(nodeId, setClosed, updateCloseState) {
 	console.error("Function loadTreeScopeNodes should be overriden");
 };
 
@@ -526,16 +524,26 @@ tabaga.TreeControl.prototype.getNodeInfoByAnchor = function(anchor) {
 
 tabaga.TreeControl.prototype.detectAnchor = function(anchor) {
 	if (anchor) {
-		var treeHash = tabaga.historyMaster.getValue(this.id, decodeURIComponent(anchor));
-		if (!treeHash) {
-			return;
-		}
-		var nodeInfo = this.getNodeInfoByAnchor(treeHash);
-		var nodeModel = this.allNodesMap[nodeInfo.nodeId];
-		if (nodeModel && !nodeModel.fakeNode) {
-			this.openNode(nodeModel.nodeLi, nodeInfo.setClosed);
-		} else {
-			this.loadTreeScopeNodes(nodeInfo.nodeId, nodeInfo.setClosed);
-		}
+		this.updateTreeStateByAnchor(anchor, false);
 	}
 };
+
+tabaga.TreeControl.prototype.updateTreeStateByAnchor = function(anchor, updateCloseState) {
+	var treeHash = tabaga.historyMaster.getValue(this.id, decodeURIComponent(anchor));
+	if (!treeHash) {
+		return;
+	}
+	var nodeInfo = this.getNodeInfoByAnchor(treeHash);
+	var nodeModel = this.allNodesMap[nodeInfo.nodeId];
+	if (nodeModel && !nodeModel.fakeNode) {
+		this.openNode(nodeModel.nodeLi, nodeInfo.setClosed);
+	} else {
+		this.loadTreeScopeNodes(nodeInfo.nodeId, nodeInfo.setClosed, updateCloseState);
+	}
+};
+
+tabaga.TreeControl.prototype.updateState = function() {
+	var anchor = location.hash.slice(1);
+	this.updateTreeStateByAnchor(anchor, true);
+};
+
