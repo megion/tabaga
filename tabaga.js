@@ -189,11 +189,6 @@ $(document).ready(function() {
 
 //
 (function($) {
-	/**
-	 * var config = { urls: { feedChildNodesUrl: "pages/page",
-	 * feedTreeScopeNodesUrl: "pages/pageTreeScope" }, enableDragAndDrop: true
-	 * //dragAndDropScrollContainer: null }
-	 */
 	$.fn.createTreeControl = function(id, config, rootNodes) {
 		var tree = $(this);
 
