@@ -69,7 +69,7 @@ tabaga.historyMaster = (function() {
 			for (var i = 0; i < parts.length; i++) {
 				var part = parts[i];
 				var entry = parsePart(part);
-				if (entry.key==key) {
+				if (entry && entry.key==key) {
 					// remove
 					parts.splice(i, 1);
 					return joinParts(parts);

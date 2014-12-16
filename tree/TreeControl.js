@@ -8,7 +8,7 @@ tabaga.TreeControl = function(id, treeUl) {
 	this.id = id;
 	this.treeUl = treeUl;
 	this.treeUl.treeControl = this;
-	this.currentSelectedTreeNodeSpan = null;
+	this.currentSelectedNodeLi = null;
 	this.allNodesMap = {};
 };
 
@@ -334,6 +334,12 @@ tabaga.TreeControl.prototype.deleteExistSubNode = function(parentUl,
 			this.deleteExistSubNode(subnodesUlContainer, subnode);
 		}
 	}
+	
+	if (this.currentSelectedNodeLi &&
+			this.currentSelectedNodeLi.nodeModel.id == deletedLi.nodeModel.id) {
+		this.clearSelectionTreeNode();
+		this.removeState();
+	}
 
 	deletedLi.nodeModel = null; // убрать перекрестную зависимость
 	deletedNode.nodeLi = null;
@@ -391,13 +397,21 @@ tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeLi) {
 	var CLASSES = tabaga.TreeControl.TREE_CLASSES;
 
 	// снять предыдущий выделенный
-	if (this.currentSelectedTreeNodeSpan) {
-		tabaga.removeClass(this.currentSelectedTreeNodeSpan, CLASSES.selectedNode);
+	if (this.currentSelectedNodeLi) {
+		tabaga.removeClass(this.currentSelectedNodeLi.nodeSpan, CLASSES.selectedNode);
 	}
-	var nodeSpan = nodeLi.nodeSpan;
-	tabaga.addClass(nodeSpan, CLASSES.selectedNode);
-	this.currentSelectedTreeNodeSpan = nodeSpan;
-}
+	
+	this.currentSelectedNodeLi = nodeLi;
+	tabaga.addClass(this.currentSelectedNodeLi.nodeSpan, CLASSES.selectedNode);
+};
+
+tabaga.TreeControl.prototype.clearSelectionTreeNode = function() {
+	var CLASSES = tabaga.TreeControl.TREE_CLASSES;
+	if (this.currentSelectedNodeLi) {
+		tabaga.removeClass(this.currentSelectedNodeLi.nodeSpan, CLASSES.selectedNode);
+	}
+	this.currentSelectedNodeLi = null;
+};
 
 /**
  * Выделение узла дерева
@@ -415,9 +429,6 @@ tabaga.TreeControl.prototype.selectTreeNode = function(nodeLi, setClosed) {
 };
 
 tabaga.TreeControl.prototype.setNodeClose = function(nodeLi, closed) {
-	//test
-	console.log("set node " + nodeLi.nodeModel.title + " closed " + closed);
-	
 	var CLASSES = tabaga.TreeControl.TREE_CLASSES;
 	var hasChildren = nodeLi.nodeModel.hasChildren;
 	
@@ -476,6 +487,12 @@ tabaga.TreeControl.prototype.setNodeClose = function(nodeLi, closed) {
 			}
 		}
 	}
+};
+
+tabaga.TreeControl.prototype.setAllParentNodeClose = function(nodeLi, setClosed) {
+	this.processAllParentNode(nodeLi, function(parentNodeLi) {
+		this.setNodeClose(parentNodeLi, setClosed);
+	});
 };
 
 tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
@@ -545,5 +562,14 @@ tabaga.TreeControl.prototype.updateTreeStateByAnchor = function(anchor, updateCl
 tabaga.TreeControl.prototype.updateState = function() {
 	var anchor = location.hash.slice(1);
 	this.updateTreeStateByAnchor(anchor, true);
+};
+
+tabaga.TreeControl.prototype.removeState = function() {
+	if (!this.disableHistory) {
+		var curAnchor = decodeURIComponent(location.hash.slice(1));
+		var newAnchor = tabaga.historyMaster.removeValue(this.id, curAnchor);
+		jQuery.history.load(newAnchor);
+		// снятие выделение узла в данном случае осуществляет callback history 
+	}
 };
 
