@@ -187,6 +187,16 @@ tabaga.TreeControl.prototype.updateExistNode = function(nodeLi, newNodeModel, up
 		if (hasChildren) {
 			// узел не имел детей, а теперь имеет
 			this.enableChildren(nodeLi, true);
+			
+			// если текущий выделенный узел не имел дочерних,
+			// а после обновления стал иметь при этом он находился в открытом состоянии,
+			// то его необходимо открыть вручную 
+			if (updateCloseState && this.currentSelectedNodeLi &&
+					this.currentSelectedNodeLi.nodeModel.id == newNodeModel.id) {
+				if (nodeLi.opened) {
+					this.setNodeClose(nodeLi, false);
+				}
+			}
 
 			var ulContainer = nodeLi.subnodesUl;
 			this.appendNewNodes(ulContainer, newSubnodes);
@@ -336,7 +346,7 @@ tabaga.TreeControl.prototype.deleteExistSubNode = function(parentUl,
 	}
 	
 	if (this.currentSelectedNodeLi &&
-			this.currentSelectedNodeLi.nodeModel.id == deletedLi.nodeModel.id) {
+			this.currentSelectedNodeLi.nodeModel.id == deletedNode.id) {
 		this.clearSelectionTreeNode();
 		this.removeState();
 	}
@@ -489,17 +499,11 @@ tabaga.TreeControl.prototype.setNodeClose = function(nodeLi, closed) {
 	}
 };
 
-tabaga.TreeControl.prototype.setAllParentNodeClose = function(nodeLi, setClosed) {
-	this.processAllParentNode(nodeLi, function(parentNodeLi) {
-		this.setNodeClose(parentNodeLi, setClosed);
-	});
-};
-
 tabaga.TreeControl.prototype.openNode = function(nodeLi, setClosed) {
 	// open parent nodes
 	//var mytree = this;
 	this.processAllParentNode(nodeLi, function(parentNodeLi) {
-		if (!parentNodeLi.nodeModel.opened) {
+		if (!parentNodeLi.opened) {
 			this.setNodeClose(parentNodeLi, false);
 		}
 	});
