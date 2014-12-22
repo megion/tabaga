@@ -156,6 +156,10 @@ tabaga.removeClasses = function(el, values) {
 	}
 };
 
+tabaga.insertAfter = function(el, refEl) {
+	refEl.parentNode.insertBefore(el, refEl.nextSibling);
+};
+
 tabaga.historyControlsMap = {};
 
 /**
