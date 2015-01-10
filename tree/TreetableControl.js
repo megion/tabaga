@@ -4,27 +4,91 @@
  * @param treeId -
  *            ID дерева
  */
-tabaga.TreeControl = function(id, treeEl) {
+tabaga.TreetableControl = function(id, treeEl) {
 	tabaga.AbstractTreeControl.apply(this, arguments);
 };
 
-tabaga.TreeControl.prototype = Object.create(tabaga.AbstractTreeControl.prototype);
+tabaga.TreetableControl.prototype = Object.create(tabaga.AbstractTreeControl.prototype);
 
 /**
  * Начальная инициализация дерева
  */
-tabaga.TreeControl.prototype.init = function(rootNodes) {
-	this.appendNewNodes(this.treeEl, rootNodes);
+tabaga.TreetableControl.prototype.init = function(rootNodes) {
+	var tBodies = this.treeEl.tBodies;
+	if (tBodies && (tBodies.length > 0)) {
+		// get first el
+		this.tableBodyEl = tBodies[0];
+	} else {
+		// create tbody
+		this.tableBodyEl = document.createElement('tbody');
+		this.treeEl.appendChild(tableBodyEl);
+	}
+	this.appendNewRootNodes(rootNodes);
 };
 
-tabaga.TreeControl.prototype.updateRootNodes = function(rootNodes, updateCloseState) {
-	this.updateExistUlNodesContainer(this.treeEl, rootNodes, updateCloseState);
+/**
+ * Вставить массив корневых новых узлов
+ */
+tabaga.TreetableControl.prototype.appendNewRootNodes = function(rootNodes) {
+	this.rootNodes = rootNodes;
+	
+	for ( var i = 0; i < rootNodes.length; i++) {
+		var newNode = rootNodes[i];
+		if (i == (rootNodes.length - 1)) {
+			newNode.isLast = true;
+		}
+		this.appendNewNode(newNode);
+	}
+};
+
+/**
+ * Добавить новый узел
+ */
+tabaga.TreetableControl.prototype.appendNewNode = function(newNode) {
+	var newTr = document.createElement("tr");
+	
+	// задаем onclick обработчик по умолчанию.
+	// При желании можно поменять перегрузив appendNewNode  
+	newTr.onclick = tabaga.AbstractTreeControl.onClickTreeNode;
+	this.tableBodyEl.appendChild(newTr);
+
+	var subnodes = newNode.children;
+
+	var hasChildren = (subnodes != null && subnodes.length > 0);
+	
+	var td1 = document.createElement("tr");
+	newTr.appendChild(td1);
+
+	var nodeSpan = document.createElement("span");
+	nodeSpan.className = tabaga.AbstractTreeControl.TREE_CLASSES.treeNode;
+	nodeSpan.innerHTML = newNode.title;
+	td1.appendChild(nodeSpan);
+	newTr.nodeSpan = nodeSpan;
+	newTr.treeControl = this;
+
+	// Внимание!!! создание перекрестной ссылки. 1 - необходимо например при
+	// получении модели узла в событиях. 2 - вторая ссылка используется при
+	// обновлении дерева
+	newTr.nodeModel = newNode;
+	newNode.nodeEl = newTr;
+
+	this.allNodesMap[newNode.id] = newNode;
+
+	// добавить детей
+	if (hasChildren) {
+		this.enableChildren(newLi, true);
+		var ulContainer = newLi.subnodesUl;
+		this.appendNewNodes(ulContainer, subnodes);
+	}
+	
+	return newTr;
+
 };
 
 /**
  * Обновляет содержимое существующего контейнера узлов UL
  */
-tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
+tabaga.TreetableControl.prototype.updateExistUlNodesContainer = function(
 		ulContainer, newNodes, updateCloseState) {
 	var oldNodes = null;
 	if (ulContainer) { 
@@ -103,7 +167,7 @@ tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
 /**
  * Обновляет узел и все дочерние узлы из новой модели узла
  */
-tabaga.TreeControl.prototype.updateExistNode = function(nodeEl, newNodeModel, updateCloseState) {
+tabaga.TreetableControl.prototype.updateExistNode = function(nodeEl, newNodeModel, updateCloseState) {
 	var oldNodeModel = nodeEl.nodeModel;
 	var oldSubnodes = oldNodeModel.children;
 	var newSubnodes = newNodeModel.children;
@@ -169,7 +233,7 @@ tabaga.TreeControl.prototype.updateExistNode = function(nodeEl, newNodeModel, up
 /**
  * Установка для элемента узла span возможности перемещения в под выбранный узел
  */
-tabaga.TreeControl.prototype.enableChildren = function(nodeEl, enable) {
+tabaga.TreetableControl.prototype.enableChildren = function(nodeEl, enable) {
 	if (enable) {
 		if (nodeEl.subnodesUl) {
 			console.error("Error call: node have children");
@@ -199,7 +263,7 @@ tabaga.TreeControl.prototype.enableChildren = function(nodeEl, enable) {
 	}
 };
 
-tabaga.TreeControl.prototype.processAllParentNode = function(nodeEl,
+tabaga.TreetableControl.prototype.processAllParentNode = function(nodeEl,
 		processNodeFn) {
 	var nodeUl = nodeEl.parentNode;
 	if (nodeUl.nodeName.toLowerCase() == "ul") {
@@ -216,65 +280,9 @@ tabaga.TreeControl.prototype.processAllParentNode = function(nodeEl,
 };
 
 /**
- * Добавить новый узел
- */
-tabaga.TreeControl.prototype.appendNewNode = function(parentUl, newNode) {
-	var newLi = document.createElement("li");
-	
-	// задаем onclick обработчик по умолчанию.
-	// При желании можно поменять перегрузив appendNewNode  
-	newLi.onclick = tabaga.AbstractTreeControl.onClickTreeNode;
-	
-	parentUl.appendChild(newLi);
-
-	var subnodes = newNode.children;
-
-	var hasChildren = (subnodes != null && subnodes.length > 0);
-
-	var nodeSpan = document.createElement("span");
-	nodeSpan.className = tabaga.AbstractTreeControl.TREE_CLASSES.treeNode;
-	nodeSpan.innerHTML = newNode.title;
-	newLi.appendChild(nodeSpan);
-	newLi.nodeSpan = nodeSpan;
-	newLi.treeControl = this;
-
-	// Внимание!!! создание перекрестной ссылки. 1 - необходимо например при
-	// получении модели узла в событиях. 2 - вторая ссылка используется при
-	// обновлении дерева
-	newLi.nodeModel = newNode;
-	newNode.nodeEl = newLi;
-
-	this.allNodesMap[newNode.id] = newNode;
-
-	// добавить детей
-	if (hasChildren) {
-		this.enableChildren(newLi, true);
-		var ulContainer = newLi.subnodesUl;
-		this.appendNewNodes(ulContainer, subnodes);
-	}
-	
-	return newLi;
-
-};
-
-/**
- * Вставить массив новых узлов
- */
-tabaga.TreeControl.prototype.appendNewNodes = function(ulContainer, newNodes) {
-	ulContainer.nodeModels = newNodes;
-	for ( var i = 0; i < newNodes.length; i++) {
-		var newNode = newNodes[i];
-		if (i == (newNodes.length - 1)) {
-			newNode.isLast = true;
-		}
-		this.appendNewNode(ulContainer, newNode);
-	}
-};
-
-/**
  * Удалить существующий узел
  */
-tabaga.TreeControl.prototype.deleteExistSubNode = function(parentUl,
+tabaga.TreetableControl.prototype.deleteExistSubNode = function(parentUl,
 		deletedNode) {
 	var deletedLi = deletedNode.nodeEl;
 
@@ -307,7 +315,7 @@ tabaga.TreeControl.prototype.deleteExistSubNode = function(parentUl,
 /**
  * Переместить существующий узел
  */
-tabaga.TreeControl.prototype.moveToEndExistSubNode = function(parentUl,
+tabaga.TreetableControl.prototype.moveToEndExistSubNode = function(parentUl,
 		movedNode) {
 	var movedNodeEl = movedNode.nodeEl;
 
@@ -318,7 +326,7 @@ tabaga.TreeControl.prototype.moveToEndExistSubNode = function(parentUl,
 /**
  * Переместить существующий узел после указанного узла
  */
-tabaga.TreeControl.prototype.moveToAfterExistSubNode = function(parentUl,
+tabaga.TreetableControl.prototype.moveToAfterExistSubNode = function(parentUl,
 		movedNode, afterNode) {
 	var movedNodeEl = movedNode.nodeEl;
 	
@@ -332,7 +340,7 @@ tabaga.TreeControl.prototype.moveToAfterExistSubNode = function(parentUl,
 /**
  * Обновляет видимую часть узла
  */
-tabaga.TreeControl.prototype.updateVisualNodeEl = function(nodeEl, newNode) {
+tabaga.TreetableControl.prototype.updateVisualNodeEl = function(nodeEl, newNode) {
 	var nodeSpan = nodeEl.nodeSpan;
 	nodeSpan.innerHTML = newNode.title;
 };
@@ -340,7 +348,7 @@ tabaga.TreeControl.prototype.updateVisualNodeEl = function(nodeEl, newNode) {
 /**
  * Установить видимость выделения узла
  */
-tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeEl) {
+tabaga.TreetableControl.prototype.setSelectionTreeNode = function(nodeEl) {
 	var CLASSES = tabaga.AbstractTreeControl.TREE_CLASSES;
 
 	// снять предыдущий выделенный
@@ -352,7 +360,7 @@ tabaga.TreeControl.prototype.setSelectionTreeNode = function(nodeEl) {
 	tabaga.addClass(this.currentSelectedNodeEl.nodeSpan, CLASSES.selectedNode);
 };
 
-tabaga.TreeControl.prototype.clearSelectionTreeNode = function() {
+tabaga.TreetableControl.prototype.clearSelectionTreeNode = function() {
 	var CLASSES = tabaga.AbstractTreeControl.TREE_CLASSES;
 	if (this.currentSelectedNodeEl) {
 		tabaga.removeClass(this.currentSelectedNodeEl.nodeSpan, CLASSES.selectedNode);
@@ -365,7 +373,7 @@ tabaga.TreeControl.prototype.clearSelectionTreeNode = function() {
  * 
  * @param nodeElHtml
  */
-tabaga.TreeControl.prototype.selectTreeNode = function(nodeEl, setClosed) {
+tabaga.TreetableControl.prototype.selectTreeNode = function(nodeEl, setClosed) {
 	this.setSelectionTreeNode(nodeEl);
 	this.setNodeClose(nodeEl, setClosed);
 	
@@ -375,7 +383,7 @@ tabaga.TreeControl.prototype.selectTreeNode = function(nodeEl, setClosed) {
 	}
 };
 
-tabaga.TreeControl.prototype.setNodeClose = function(nodeEl, closed) {
+tabaga.TreetableControl.prototype.setNodeClose = function(nodeEl, closed) {
 	tabaga.AbstractTreeControl.prototype.setNodeClose.apply(this, arguments);
 	
 	var CLASSES = tabaga.AbstractTreeControl.TREE_CLASSES;

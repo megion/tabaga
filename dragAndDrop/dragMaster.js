@@ -10,7 +10,6 @@ tabaga.dragMaster = (function() {
 	 */
 	var mouseDownAt = null;
 	var currentDropTarget = null;
-	var bodyCursorStyle = null;
 
 	function initDrag(x, y, el) {
 		mouseDownAt = {
@@ -21,8 +20,7 @@ tabaga.dragMaster = (function() {
 		addDocumentEventHandlers();
 
 		// save cursor style
-		bodyCursorStyle = document.body.style.cursor;
-		document.body.style.cursor = "pointer";
+		tabaga.addClass(document.body, "dragstart");
 	}
 
 	function mouseDown(e) {
@@ -122,8 +120,8 @@ tabaga.dragMaster = (function() {
 		// (3)
 		removeDocumentEventHandlers();
 
-		// (4) восстанавливаем стиль курсора
-		document.body.style.cursor = bodyCursorStyle;
+		// (4) восстанавливаем стиль body
+		tabaga.removeClass(document.body, "dragstart");
 	}
 
 	function getMouseOffset(target, x, y) {

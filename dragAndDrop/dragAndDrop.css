@@ -27,3 +27,8 @@
 .dragedObjectClone {
 }
 
+body.dragstart {
+	cursor: pointer;
+	overflow: hidden;
+}
+
