@@ -93,7 +93,7 @@ tabaga.TreeControl.prototype.updateExistUlNodesContainer = function(
 			this.updateExistNode(oldNodeEl, newNode, updateCloseState);
 		} else {
 			// нет узла с таким ключом среди старых - необходимо добавить
-			this.appendNewNode(ulContainer, newNode, true, true);
+			this.appendNewNode(ulContainer, newNode);
 		}
 		
 		prevNewNode = newNode;
@@ -313,6 +313,7 @@ tabaga.TreeControl.prototype.moveToEndExistSubNode = function(parentUl,
 
 	// переместить HTML элемент
 	parentUl.appendChild(movedNodeEl);
+	console.log("move '" + movedNode.title + "' to end");
 };
 
 /**
@@ -324,8 +325,10 @@ tabaga.TreeControl.prototype.moveToAfterExistSubNode = function(parentUl,
 	
 	if (afterNode) {
 		tabaga.insertAfter(movedNodeEl, afterNode.nodeEl);
+		console.log("move '" + movedNode.title + "' after '" + afterNode.title + "'");
 	} else {
 		parentUl.insertBefore(movedNodeEl, parentUl.firstChild);
+		console.log("move '" + movedNode.title + "' first ");
 	}
 };
 
