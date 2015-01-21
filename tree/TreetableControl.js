@@ -284,22 +284,6 @@ tabaga.TreetableControl.prototype.updateExistNode = function(oldNode, newNode, u
 	this.updateNodes(newSubnodes, oldSubnodes, updateCloseState);
 };
 
-tabaga.TreetableControl.prototype.processAllParentNode = function(nodeEl,
-		processNodeFn) {
-	var nodeUl = nodeEl.parentNode;
-	if (nodeUl.nodeName.toLowerCase() == "ul") {
-		if (nodeUl == this.treeEl) {
-			// конец дерева
-			return;
-		}
-		var parentNodeEl = nodeUl.parentNode;
-		if (parentNodeEl) {
-			this.processAllParentNode(parentNodeEl, processNodeFn);
-			processNodeFn.call(this, parentNodeEl);
-		}
-	}
-};
-
 /**
  * Обновляет видимую часть узла
  */

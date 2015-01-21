@@ -101,8 +101,15 @@ tabaga.AbstractTreeControl.prototype.setSelectionTreeNode = function(nodeEl) {
 	console.error("Function setSelectionTreeNode should be overriden");
 };
 
-tabaga.AbstractTreeControl.prototype.processAllParentNode = function(nodeEl, processNodeFn) {
-	console.error("Function processAllParentNode should be overriden");
+tabaga.AbstractTreeControl.prototype.processAllParentNode = function(nodeModel,
+		processNodeFn, canRunCurrent) {
+	if (canRunCurrent) {
+		processNodeFn.call(this, nodeModel);
+	}
+	if (nodeModel.parentId) {
+		var parentNodeModel = this.allNodesMap[nodeModel.parentId];
+		this.processAllParentNode(parentNodeModel, processNodeFn, true);
+	}
 };
 
 /**
@@ -155,11 +162,11 @@ tabaga.AbstractTreeControl.prototype.setNodeClose = function(nodeEl, closed) {
 
 tabaga.AbstractTreeControl.prototype.openNode = function(nodeEl, setClosed) {
 	// open parent nodes
-	this.processAllParentNode(nodeEl, function(parentNodeEl) {
-		if (!parentNodeEl.opened) {
-			this.setNodeClose(parentNodeEl, false);
+	this.processAllParentNode(nodeEl.nodeModel, function(parentNodeModel) {
+		if (!parentNodeModel.nodeEl.opened) {
+			this.setNodeClose(parentNodeModel.nodeEl, false);
 		}
-	});
+	}, false);
 	this.selectTreeNode(nodeEl, setClosed);
 };
 
