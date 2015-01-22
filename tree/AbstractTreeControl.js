@@ -112,6 +112,22 @@ tabaga.AbstractTreeControl.prototype.processAllParentNode = function(nodeModel,
 	}
 };
 
+tabaga.AbstractTreeControl.prototype.processAllChildrenNode = function(nodeModel,
+		processNodeFn, canRunCurrent, level) {
+	if (canRunCurrent) {
+		var canNext = processNodeFn(nodeModel, level);
+		if (!canNext) {
+			return;
+		}
+	}
+	if (nodeModel.children) {
+		for ( var i = 0; i < nodeModel.children.length; i++) {
+			var childNodeModel = nodeModel.children[i];
+			this.processAllChildrenNode(childNodeModel, processNodeFn, true, level++);
+		}
+	}
+};
+
 /**
  * Выделение узла дерева
  * 

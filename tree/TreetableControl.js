@@ -21,10 +21,15 @@ tabaga.TreetableControl.prototype.init = function(rootNodes) {
 	} else {
 		// create tbody
 		this.tableBodyEl = document.createElement('tbody');
-		this.treeEl.appendChild(tableBodyEl);
+		this.treeEl.appendChild(this.tableBodyEl);
 	}
 	this.rootNodes = rootNodes;
 	this.appendNewNodes(rootNodes);
+	
+	for ( var i = 0; i < rootNodes.length; i++) {
+		var node = rootNodes[i];
+		node.nodeEl.style.display = null;
+	}
 };
 
 /**
@@ -55,7 +60,7 @@ tabaga.TreetableControl.prototype.appendNewNode = function(newNode) {
 
 	var hasChildren = (subnodes != null && subnodes.length > 0);
 	
-	var td1 = document.createElement("tr");
+	var td1 = document.createElement("td");
 	newTr.appendChild(td1);
 
 	var nodeSpan = document.createElement("span");
@@ -70,6 +75,7 @@ tabaga.TreetableControl.prototype.appendNewNode = function(newNode) {
 	// обновлении дерева
 	newTr.nodeModel = newNode;
 	newNode.nodeEl = newTr;
+	newTr.style.display = "none";	
 
 	this.allNodesMap[newNode.id] = newNode;
 
@@ -91,11 +97,11 @@ tabaga.TreetableControl.prototype.enableChildren = function(nodeEl, enable) {
 	if (enable) {
 		var hitareaDiv = document.createElement("div");
 		hitareaDiv.className = tabaga.AbstractTreeControl.TREE_CLASSES.hitarea + " " +  tabaga.AbstractTreeControl.TREE_CLASSES.closedHitarea;
-		nodeEl.insertBefore(hitareaDiv, nodeEl.nodeSpan);
+		nodeEl.firstChild.insertBefore(hitareaDiv, nodeEl.nodeSpan);
 		nodeEl.hitareaDiv = hitareaDiv;
 		nodeEl.nodeModel.hasChildren = true;
 	} else {
-		nodeEl.removeChild(nodeEl.hitareaDiv);
+		nodeEl.firstChild.removeChild(nodeEl.hitareaDiv);
 		nodeEl.hitareaDiv = null;
 		nodeEl.nodeModel.hasChildren = false;
 	}
@@ -217,7 +223,7 @@ tabaga.TreetableControl.prototype.deleteExistNode = function(deletedNode) {
 	deletedTr.nodeSpan = null;
 	deletedTr.treeControl = null;
 	delete this.allNodesMap[deletedNode.id];
-	this.tableBodyEl.removeChild(deletedLi);
+	this.tableBodyEl.removeChild(deletedTr);
 };
 
 /**
@@ -334,35 +340,41 @@ tabaga.TreetableControl.prototype.setNodeClose = function(nodeEl, closed) {
 	tabaga.AbstractTreeControl.prototype.setNodeClose.apply(this, arguments);
 	
 	var CLASSES = tabaga.AbstractTreeControl.TREE_CLASSES;
-	var isLast = nodeEl.nodeModel.isLast; 
+	var isLast = nodeEl.nodeModel.isLast;
 	
-	for ( var x1 = 0; nodeEl.childNodes[x1]; x1++) {
-		var subChild = nodeEl.childNodes[x1];
-		if (subChild.nodeName.toLowerCase() == "div") {
-			if (isLast) {
-				if (closed) {
-				    tabaga.addClass(subChild, CLASSES.lastClosedHitarea);
-				    tabaga.removeClass(subChild, CLASSES.lastOpenedHitarea);
-				} else {
-					tabaga.addClass(subChild, CLASSES.lastOpenedHitarea);
-				    tabaga.removeClass(subChild, CLASSES.lastClosedHitarea);
-				}
-			}
-			if (closed) {
-				tabaga.addClass(subChild, CLASSES.closedHitarea);
-				tabaga.removeClass(subChild, CLASSES.openedHitarea);
-			} else {
-				tabaga.addClass(subChild, CLASSES.openedHitarea);
-				tabaga.removeClass(subChild, CLASSES.closedHitarea);
-			}
-		} else if (subChild.nodeName.toLowerCase() == "span") {
-            //
-		} else if (subChild.nodeName.toLowerCase() == "ul") {
-			if (closed) {
-				subChild.style.display = "none";	
-			} else {
-				subChild.style.display = "block";
-			}
+	if (isLast) {
+		if (closed) {
+		    tabaga.addClass(nodeEl.hitareaDiv, CLASSES.lastClosedHitarea);
+		    tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.lastOpenedHitarea);
+		} else {
+			tabaga.addClass(nodeEl.hitareaDiv, CLASSES.lastOpenedHitarea);
+		    tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.lastClosedHitarea);
 		}
 	}
+	if (closed) {
+		tabaga.addClass(nodeEl.hitareaDiv, CLASSES.closedHitarea);
+		tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.openedHitarea);
+	} else {
+		tabaga.addClass(nodeEl.hitareaDiv, CLASSES.openedHitarea);
+		tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.closedHitarea);
+	}
+	
+	this.processAllChildrenNode(nodeEl.nodeModel, function(childNodeModel, level) {
+		if (childNodeModel.nodeEl.opened) {
+			if (closed) {
+				childNodeModel.nodeEl.style.display = "none";	
+			} else {
+				childNodeModel.nodeEl.style.display = null;
+			}
+		} else {
+			if (closed) { 
+				childNodeModel.nodeEl.style.display = "none";
+				// узел находился в закрытом состоянии, следовательно все дочерние уже невидимы
+				return false;
+			} else {
+				childNodeModel.nodeEl.style.display = null;
+			}
+		}
+		return true;
+	}, false, 0);
 };

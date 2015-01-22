@@ -191,7 +191,7 @@ $(document).ready(function() {
 	$.history.init(tabaga.pageload);
 });
 
-//
+// tree
 (function($) {
 	$.fn.createTreeControl = function(id, config, rootNodes) {
 		var tree = $(this);
@@ -199,6 +199,25 @@ $(document).ready(function() {
 		config.TreeControlConstructor = config.TreeControlConstructor
 				|| tabaga.TreeControl;
 		var treeControl = new config.TreeControlConstructor(id, tree[0]);
+		treeControl.configure(config);
+		treeControl.init(rootNodes);
+
+		if (!config.disableHistory) {
+			tabaga.historyControlsMap[id] = treeControl;
+		}
+
+		return treeControl;
+	}
+})(jQuery);
+
+// tree table
+(function($) {
+	$.fn.createTreetableControl = function(id, config, rootNodes) {
+		var tree = $(this);
+
+		config.TreetableControlConstructor = config.TreetableControlConstructor
+				|| tabaga.TreetableControl;
+		var treeControl = new config.TreetableControlConstructor(id, tree[0]);
 		treeControl.configure(config);
 		treeControl.init(rootNodes);
 
