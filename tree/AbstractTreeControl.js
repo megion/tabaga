@@ -26,7 +26,8 @@ tabaga.AbstractTreeControl.TREE_CLASSES = {
 	openedHitarea : "opened-hitarea",
 	lastOpened : "lastOpened",
 	lastOpenedHitarea : "lastOpened-hitarea",
-	hitarea : "hitarea"
+	hitarea : "hitarea",
+	firstTdInner : "firstTdInner"
 };
 
 /**
@@ -145,7 +146,7 @@ tabaga.AbstractTreeControl.prototype.selectTreeNode = function(nodeEl, setClosed
 
 tabaga.AbstractTreeControl.prototype.setNodeClose = function(nodeEl, closed) {
 	var CLASSES = tabaga.AbstractTreeControl.TREE_CLASSES;
-	var hasChildren = nodeEl.nodeModel.hasChildren;
+	var hasChildren = nodeEl.hasChildren;
 	
 	// mark node as closed or opened
 	nodeEl.opened = !closed;
@@ -154,7 +155,7 @@ tabaga.AbstractTreeControl.prototype.setNodeClose = function(nodeEl, closed) {
 		return;
 	}
 
-	var isLast = nodeEl.nodeModel.isLast; 
+	var isLast = nodeEl.isLast; 
 	if (isLast) {
 		if (closed) {
 			tabaga.addClass(nodeEl, CLASSES.lastClosed);
@@ -171,6 +172,23 @@ tabaga.AbstractTreeControl.prototype.setNodeClose = function(nodeEl, closed) {
 	} else {
 		tabaga.addClass(nodeEl, CLASSES.opened);
 	    tabaga.removeClass(nodeEl, CLASSES.closed);
+	}
+	
+	if (isLast) {
+		if (closed) {
+		    tabaga.addClass(nodeEl.hitareaDiv, CLASSES.lastClosedHitarea);
+		    tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.lastOpenedHitarea);
+		} else {
+			tabaga.addClass(nodeEl.hitareaDiv, CLASSES.lastOpenedHitarea);
+		    tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.lastClosedHitarea);
+		}
+	}
+	if (closed) {
+		tabaga.addClass(nodeEl.hitareaDiv, CLASSES.closedHitarea);
+		tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.openedHitarea);
+	} else {
+		tabaga.addClass(nodeEl.hitareaDiv, CLASSES.openedHitarea);
+		tabaga.removeClass(nodeEl.hitareaDiv, CLASSES.closedHitarea);
 	}
 	
 	// override ...
@@ -251,5 +269,22 @@ tabaga.AbstractTreeControl.prototype.removeState = function() {
 		jQuery.history.load(newAnchor);
 		// снятие выделение узла в данном случае осуществляет callback history 
 	}
+};
+
+tabaga.AbstractTreeControl.prototype.updateLinkInParentChildren = function(nodeModel) {
+	if (nodeModel.parentId) {
+		var parentNode = this.allNodesMap[nodeModel.parentId];
+		if (parentNode.children) {
+			for ( var i = 0; i < parentNode.children.length; i++) {
+				var childNode = parentNode.children[i];
+				if (childNode.id == nodeModel.id) {
+					// update child model
+					parentNode.children[i] = nodeModel;
+					return;
+				}
+			}
+		}
+	}
+	
 };
 
